@@ -19,47 +19,41 @@ Game trading platform with user-facing apps (mobile/web/desktop) and admin CMS.
 
 ```bash
 # Install dependencies
-pnpm install
-
-# Start Docker services (DB + Redis)
-docker-compose up -d postgres redis
+just install
 
 # Start full stack
-docker-compose up --build
+just docker-up
 
 # Development
-pnpm dev
+just dev
 ```
 
 ## Commands
 
-### Frontend
+### Development
 ```bash
-pnpm dev              # All apps
-pnpm dev-web         # Next.js only
-pnpm dev-app         # Expo only
-pnpm dev-admin       # CMS only
+just dev              # All frontend apps
+just dev-web          # Next.js only
+just dev-app          # Expo only
+just dev-admin        # CMS only
+just dev-rust         # Rust backend (cargo watch)
 ```
 
-### Backend
+### Build & Deploy
 ```bash
-pnpm dev:rust        # cargo watch
-pnpm build:rust     # Release build
+just build            # Build all packages/apps
+just build-rust       # Rust release build
+just docker-up        # Start all Docker services
+just docker-down      # Stop all containers
 ```
 
-### Docker
+### Utilities
 ```bash
-docker-compose up --build   # Start all services
-docker-compose down         # Stop all
-just smoke                  # Health check
-just db-reset              # Reset database
-```
-
-### Build & Test
-```bash
-pnpm build         # Build all
-pnpm lint          # Lint all
-just clean         # Clean build artifacts
+just smoke            # Health check all services
+just db-reset         # Reset database
+just clean            # Clean build artifacts
+just lint             # Lint all
+just test             # Run tests
 ```
 
 ## Project Structure
@@ -122,23 +116,19 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 ### Seed Data
 Seed runs automatically on first Docker start:
 ```bash
-docker-compose up --build  # seed/01-init.sql runs automatically
+just docker-up  # seed/01-init.sql runs automatically
 ```
 
 ### Migrations
 ```bash
-# Run migrations manually
 # Migration files: rust/infrastructure/db/migrations/
 ```
 
 ## Testing
 
 ```bash
-# Run tests
-pnpm test
-
-# Smoke test (requires services running)
-just smoke
+just test             # Run tests
+just smoke            # Health check (requires services running)
 ```
 
 ## OpenCode Integration
