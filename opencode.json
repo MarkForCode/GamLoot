@@ -2,5 +2,23 @@
   "instructions": [".opencode/instructions.md"],
   "completion": {
     "instructions": [".opencode/completion.md"]
+  },
+  "skills": {
+    "requirements": {
+      "description": "需求分析 - 分析新功能需求",
+      "trigger": "用戶說要做新功能、想要有XX、系統需要OO"
+    },
+    "bugfix": {
+      "description": "Bug修復 - 修復問題和錯誤",
+      "trigger": "用戶說壞了、不能用了、有錯誤、bug"
+    },
+    "feature": {
+      "description": "新功能開發 - 實作已確認的需求",
+      "trigger": "用戶說要開始實作了、需求已確認"
+    },
+    "refactor": {
+      "description": "重構優化 - 改善程式碼品質",
+      "trigger": "用戶說要重構、優化、整理程式碼"
+    }
   }
 }
