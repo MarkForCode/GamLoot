@@ -1,0 +1,6 @@
+{
+  "instructions": [".opencode/instructions.md"],
+  "completion": {
+    "instructions": [".opencode/completion.md"]
+  }
+}
