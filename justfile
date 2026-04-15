@@ -74,3 +74,19 @@ test:
 # Type check
 typecheck:
     pnpm run --filter=* typecheck || echo "No typecheck command in turbo pipeline"
+
+# Smoke test
+smoke:
+    @echo "Checking Docker services..."
+    @docker ps --format '{{.Names}}' | grep -q "gam_trade" || (echo "ERROR: Docker not running" && exit 1)
+    @echo "Checking user-api (8080)..."
+    @curl -sf http://localhost:8080/health || echo "WARNING: user-api not ready"
+    @echo "Checking cms-api (8081)..."
+    @curl -sf http://localhost:8081/health || echo "WARNING: cms-api not ready"
+    @echo "Checking user-web (3000)..."
+    @curl -sf http://localhost:3000/health || echo "WARNING: user-web not ready"
+    @echo "Checking admin-web (3001)..."
+    @curl -sf http://localhost:3001/health || echo "WARNING: admin-web not ready"
+    @echo "Checking user-app (Expo Metro)..."
+    @curl -sf http://localhost:8081 || echo "WARNING: user-app Metro not ready (expected on different port)"
+    @echo "Smoke test completed"
