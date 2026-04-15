@@ -5,9 +5,12 @@
   "main": "./src/index.ts",
   "scripts": {
     "lint": "eslint .",
-    "codegen": "specta gen"
+    "codegen": "specta gen",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
-    "typescript": "~5.3.0"
+    "typescript": "~5.3.0",
+    "vitest": "^2.0.0"
   }
 }
