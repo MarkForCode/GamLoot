@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@repo/ui": ["packages/ui/src"],
+      "@repo/ui/*": ["packages/ui/src/*"],
+      "@repo/features": ["packages/features/src"],
+      "@repo/features/*": ["packages/features/src/*"],
+      "@repo/api-client": ["packages/api-client/src"],
+      "@repo/types": ["packages/types/src"],
+      "@gam/user-app/*": ["apps/user/app/*"],
+      "@gam/user-web/*": ["apps/user/web/*"],
+      "@gam/admin-web/*": ["apps/admin/web/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next", "target"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@repo/types",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "codegen": "specta gen"
+  },
+  "devDependencies": {
+    "typescript": "~5.3.0"
+  }
+}

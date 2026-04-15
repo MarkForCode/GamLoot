@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gam_trade
+      POSTGRES_PASSWORD: gam_trade_secure_pass
+      POSTGRES_DB: gam_trade_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./seed:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gam_trade"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  user-api:
+    build:
+      context: .
+      dockerfile: rust/services/user-api/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://gam_trade:gam_trade_secure_pass@postgres:5432/gam_trade_dev
+      REDIS_URL: redis://redis:6379
+
+  cms-api:
+    build:
+      context: .
+      dockerfile: rust/services/cms-api/Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://gam_trade:gam_trade_secure_pass@postgres:5432/gam_trade_dev
+      REDIS_URL: redis://redis:6379
+
+  order-worker:
+    build:
+      context: .
+      dockerfile: rust/workers/order/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://gam_trade:gam_trade_secure_pass@postgres:5432/gam_trade_dev
+      REDIS_URL: redis://redis:6379
+
+  payment-worker:
+    build:
+      context: .
+      dockerfile: rust/workers/payment/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://gam_trade:gam_trade_secure_pass@postgres:5432/gam_trade_dev
+      REDIS_URL: redis://redis:6379
+
+  notification-worker:
+    build:
+      context: .
+      dockerfile: rust/workers/notification/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://gam_trade:gam_trade_secure_pass@postgres:5432/gam_trade_dev
+      REDIS_URL: redis://redis:6379
+
+volumes:
+  postgres_data:
+  redis_data:
