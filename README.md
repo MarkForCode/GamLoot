@@ -99,6 +99,10 @@ gam_web_rn/
 | user-web | 3000 |
 | admin-web | 3001 |
 
+## Product Planning Docs
+
+- `docs/guild-trade-platform-mvp.md` - 多遊戲 / 多公會交易平台 MVP 規格與第一階段實作計畫
+
 ## Environment Variables
 
 ```bash
