@@ -126,12 +126,14 @@ just docker-up  # seed/01-init.sql runs automatically
 ### Migrations
 ```bash
 # Migration files: rust/infrastructure/db/migrations/
+just validate-migrations # Apply all SQL migrations to a disposable Postgres container
 ```
 
 ## Testing
 
 ```bash
 just test             # Run tests
+just validate-migrations # Validate database migrations
 just smoke            # Health check (requires services running)
 ```
 

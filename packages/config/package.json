@@ -3,6 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./eslint": "./eslint.js",
+    "./routing": "./src/lib/routing.ts",
+    "./i18n": "./src/lib/i18n.ts"
+  },
   "scripts": {
     "lint": "eslint ."
   },

@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['@repo/config/eslint'],
+  extends: ['./packages/config/eslint.js'],
   root: true,
   ignorePatterns: ['dist/', '.next/', 'target/'],
 };

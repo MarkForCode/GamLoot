@@ -4,7 +4,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 module.exports = withNextIntl({
   reactStrictMode: true,
-  transpilePackages: ['@repo/ui', '@repo/api-client'],
+  transpilePackages: ['@repo/ui', '@repo/api-client', '@repo/config'],
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
   },

@@ -1,10 +1,12 @@
-import { TamaguiProvider, createTamagui } from '@tamagui/core';
-import { config as defaultConfig } from '@tamagui/config';
+'use client';
 
-const tamagui = createTamagui(defaultConfig);
+import { TamaguiProvider, createTamagui } from 'tamagui';
+import { getDefaultTamaguiConfig } from '@tamagui/config-default';
+
+const tamagui = createTamagui(getDefaultTamaguiConfig('web'));
 
 export const Provider = ({ children }: { children: React.ReactNode }) => {
-  return <TamaguiProvider value={tamagui}>{children}</TamaguiProvider>;
+  return <TamaguiProvider config={tamagui}>{children}</TamaguiProvider>;
 };
 
 export { tamagui };

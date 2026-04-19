@@ -7,6 +7,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@tamagui/config-default": "^1.144.4",
     "tamagui": "^1.100.0",
     "react": "^18.3.1"
   },

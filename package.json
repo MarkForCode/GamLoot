@@ -5,10 +5,14 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
+    "test": "turbo run test",
     "dev:rust": "cargo watch -x run",
     "build:rust": "cargo build --release"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
     "turbo": "^2.0.0"
   },
   "packageManager": "pnpm@9.0.0",
