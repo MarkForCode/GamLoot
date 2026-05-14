@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GAM - Audit Log &amp; Activity History</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#00dbe9",
+                        "inverse-primary": "#006970",
+                        "on-primary-container": "#006970",
+                        "on-primary": "#00363a",
+                        "background": "#051424",
+                        "secondary": "#ecb2ff",
+                        "primary-fixed": "#7df4ff",
+                        "on-primary-fixed-variant": "#004f54",
+                        "on-tertiary-container": "#605f5e",
+                        "on-surface": "#d4e4fa",
+                        "tertiary": "#f9f5f5",
+                        "surface-container": "#122131",
+                        "surface-variant": "#273647",
+                        "primary-container": "#00f0ff",
+                        "on-error-container": "#ffdad6",
+                        "surface-bright": "#2c3a4c",
+                        "tertiary-fixed": "#e5e2e1",
+                        "on-surface-variant": "#b9cacb",
+                        "secondary-fixed": "#f8d8ff",
+                        "surface-container-highest": "#273647",
+                        "error": "#ffb4ab",
+                        "inverse-surface": "#d4e4fa",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#313030",
+                        "on-error": "#690005",
+                        "primary": "#dbfcff",
+                        "secondary-fixed-dim": "#ecb2ff",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "inverse-on-surface": "#233143",
+                        "on-secondary": "#520071",
+                        "secondary-container": "#cf5cff",
+                        "on-tertiary-fixed-variant": "#474646",
+                        "on-background": "#d4e4fa",
+                        "on-secondary-container": "#480063",
+                        "surface-dim": "#051424",
+                        "outline": "#849495",
+                        "surface-container-lowest": "#010f1f",
+                        "tertiary-container": "#dcd9d8",
+                        "on-primary-fixed": "#002022",
+                        "surface-container-high": "#1c2b3c",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-secondary-fixed": "#320047",
+                        "surface": "#051424",
+                        "surface-container-low": "#0d1c2d",
+                        "outline-variant": "#3b494b",
+                        "on-secondary-fixed-variant": "#74009f",
+                        "primary-fixed-dim": "#00dbe9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "3xl": "64px",
+                        "gutter": "20px",
+                        "unit": "4px",
+                        "margin": "24px",
+                        "2xl": "48px",
+                        "lg": "24px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "mono-data": ["Fira Code", "monospace"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "h2": ["Inter", "sans-serif"],
+                        "h1": ["Inter", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "label-caps": ["Inter", "sans-serif"],
+                        "h3": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "mono-data": ["14px", { "lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h2": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "700" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #051424; /* surface */
+            color: #d4e4fa; /* on-surface */
+        }
+        
+        /* Custom Scrollbar for Data Table */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #122131; /* surface-container */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #273647; /* surface-variant */
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #3b494b; /* outline-variant */
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(18, 33, 49, 0.7); /* surface-container with opacity */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* Input highlight glow */
+        .input-glow:focus-within {
+            box-shadow: 0 1px 0 0 #00dbe9; /* primary-fixed-dim glow on bottom border */
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased overflow-hidden">
+<!-- TopNavBar -->
+<nav class="hidden md:flex fixed top-0 w-full z-50 justify-between items-center px-lg h-[64px] bg-surface/80 backdrop-blur-xl shadow-none border-b border-surface-variant font-body-lg tracking-tight">
+<div class="flex items-center gap-lg">
+<span class="text-[24px] font-black italic tracking-tighter text-primary-fixed-dim">GAM</span>
+<!-- Search Bar on_left -->
+<div class="relative w-64 h-10 rounded-DEFAULT bg-surface-container border border-surface-variant flex items-center px-sm input-glow overflow-hidden">
+<span class="material-symbols-outlined text-outline-variant text-[20px] mr-sm">search</span>
+<input class="w-full h-full bg-transparent border-none focus:ring-0 text-on-surface font-body-sm placeholder-outline-variant p-0 outline-none" placeholder="Search Audit Logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-margin">
+<div class="flex items-center gap-md">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md hover:bg-surface-variant/50 px-sm py-xs rounded-DEFAULT" href="#">Marketplace</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md hover:bg-surface-variant/50 px-sm py-xs rounded-DEFAULT" href="#">Trades</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md hover:bg-surface-variant/50 px-sm py-xs rounded-DEFAULT" href="#">Analytics</a>
+</div>
+<div class="flex items-center gap-md">
+<button class="bg-primary-fixed-dim text-on-primary font-label-caps uppercase px-md py-sm rounded-DEFAULT hover:bg-primary-fixed transition-colors active:scale-95 border border-primary-fixed-dim shadow-[inset_0_0_8px_rgba(0,219,233,0.3)]">Create Listing</button>
+<div class="flex gap-sm">
+<button class="w-10 h-10 flex items-center justify-center rounded-DEFAULT hover:bg-surface-variant/50 text-on-surface-variant transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-DEFAULT hover:bg-surface-variant/50 text-on-surface-variant transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+</button>
+</div>
+<div class="w-10 h-10 rounded-DEFAULT overflow-hidden border border-surface-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A highly detailed close-up portrait of a digital avatar suitable for a professional gamer profile. The avatar features a stylized human character with subtle cybernetic implants or glowing neon accents, set against a dark, moody background. Lighting is dramatic, with rim lights in electric blue and magenta highlighting the character's features. The overall aesthetic is sleek, high-fidelity, and integrates seamlessly into a dark-themed, glassmorphic UI environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpydrehP1Im1O2xfShVpZ_tnJS20GIi7RKDqZkwFbJVA1AnzzkPUkfYjRSnhjL_GGqCK9NRoMaYjk4x6Sd03rwdX39auvkChWmV93DWx7a7xydZBR6Du0tr8fdRdV2N-X9WMeMd4GNhQuHNlcpTDaymWI3cqGf6_PZMZOFsSbUGK-xeCorJp3wsuNtOrSPi5mVI5WJjvwIEdxcqTazYy5VnvGvdZmOlGR4W5DU7AhznEzWp-sU7BFVsI51kVed2Z7oHF8x5ZtC_g"/>
+</div>
+</div>
+</div>
+</nav>
+<div class="flex h-screen pt-[64px]">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col h-[calc(100vh-64px)] w-[256px] fixed left-0 top-[64px] overflow-y-auto bg-surface border-r border-surface-variant shadow-none">
+<!-- Header/Workspace Switcher -->
+<div class="p-lg border-b border-surface-variant flex items-center gap-md hover:bg-surface-container cursor-pointer transition-colors">
+<div class="w-10 h-10 rounded-DEFAULT overflow-hidden bg-surface-variant flex-shrink-0">
+<img alt="Guild Logo" class="w-full h-full object-cover" data-alt="A highly detailed digital emblem representing a professional gaming guild. The design features sharp, aggressive geometric shapes forming an abstract animal or weapon motif, rendered in a striking electric cyan on a deep carbon-fiber-textured black background. The emblem appears slightly embossed with a subtle metallic sheen and a faint neon glow, perfectly suited for a high-end eSports team identity within a dark-mode SaaS dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCi5mzdr2fu67r8zwMHcy8jG-gsDCMxX0Ql7B3Zz5kzVloEbh9cou2aHpgdDbQqOpZKfOZMKDrYSk_DczBBjunsuMuwOfFWL8xcVh0cICLZeE6PuDArox7snlHZArldB8g_WkLsL4y4oXtBvZsuME2zQXtrI_VJYuKBnRJ3ZyUV-cAGC6YVSlCye9GrCXUS7LLbJrOxVSkf1op1f7uXbOQvTos7O35A4seR_tBryIoWJRIMJCs70hjyhJ-CNbtvR-TErxSxPcuBig"/>
+</div>
+<div class="overflow-hidden">
+<h2 class="font-body-md font-bold text-on-surface truncate">GAM Marketplace</h2>
+<p class="font-body-sm text-outline truncate">Pro League Guild</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant ml-auto">expand_more</span>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 py-md flex flex-col gap-unit px-sm">
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]">storefront</span>
+                    Marketplace
+                </a>
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+                    Trades
+                </a>
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+                    Members
+                </a>
+<!-- Active State -->
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT bg-primary-container/10 text-primary-fixed-dim border-r-2 border-primary-fixed-dim transition-colors font-body-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+                    Admin
+                </a>
+</nav>
+<!-- Footer Actions -->
+<div class="p-md border-t border-surface-variant flex flex-col gap-sm">
+<button class="w-full bg-transparent border border-surface-variant text-on-surface font-label-caps uppercase px-md py-sm rounded-DEFAULT hover:bg-surface-container transition-colors flex items-center justify-center gap-sm">
+                    Switch Realm
+                </button>
+<div class="flex flex-col gap-unit mt-sm">
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+                        Support
+                    </a>
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-error transition-colors font-body-sm" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                        Logout
+                    </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-[256px] h-full overflow-y-auto bg-surface p-margin md:p-2xl custom-scrollbar">
+<!-- Page Header -->
+<div class="mb-lg flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<div class="flex items-center gap-sm text-outline font-body-sm mb-xs">
+<span>Admin</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary-fixed-dim">Security</span>
+</div>
+<h1 class="font-h1 text-on-surface">Audit Log</h1>
+<p class="font-body-lg text-on-surface-variant mt-sm max-w-2xl">Comprehensive chronological record of system activities, user interactions, and security events for compliance and troubleshooting.</p>
+</div>
+<div class="flex items-center gap-md">
+<button class="bg-surface-container border border-surface-variant text-on-surface font-body-sm px-md py-sm rounded-DEFAULT hover:bg-surface-variant transition-colors flex items-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export CSV
+                    </button>
+</div>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-margin">
+<!-- Filters & Search Ribbon (Full Width) -->
+<div class="xl:col-span-12 glass-panel rounded-lg border border-surface-variant p-md flex flex-col lg:flex-row gap-md items-center justify-between">
+<div class="flex w-full lg:w-auto gap-md flex-1">
+<!-- Local Search -->
+<div class="relative flex-1 max-w-md h-10 rounded-DEFAULT bg-surface border border-surface-variant flex items-center px-sm input-glow">
+<span class="material-symbols-outlined text-outline-variant text-[20px] mr-sm">search</span>
+<input class="w-full h-full bg-transparent border-none focus:ring-0 text-on-surface font-body-sm placeholder-outline-variant p-0 outline-none" placeholder="Search by entity, ID, or IP..." type="text"/>
+</div>
+</div>
+<div class="flex w-full lg:w-auto gap-md overflow-x-auto pb-xs lg:pb-0 custom-scrollbar">
+<!-- Date Range Filter -->
+<div class="relative min-w-[180px]">
+<select class="w-full h-10 appearance-none bg-surface border border-surface-variant text-on-surface font-body-sm rounded-DEFAULT px-md pr-xl hover:border-outline cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary-fixed-dim">
+<option>Last 24 Hours</option>
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+<option>Custom Range...</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none">calendar_today</span>
+</div>
+<!-- Action Type Filter -->
+<div class="relative min-w-[160px]">
+<select class="w-full h-10 appearance-none bg-surface border border-surface-variant text-on-surface font-body-sm rounded-DEFAULT px-md pr-xl hover:border-outline cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary-fixed-dim">
+<option>All Actions</option>
+<option>Trade Created</option>
+<option>Role Assigned</option>
+<option>Treasury Withdrawal</option>
+<option>Auth Event</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none">filter_list</span>
+</div>
+<!-- Severity Filter -->
+<div class="relative min-w-[140px]">
+<select class="w-full h-10 appearance-none bg-surface border border-surface-variant text-on-surface font-body-sm rounded-DEFAULT px-md pr-xl hover:border-outline cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary-fixed-dim">
+<option>All Severities</option>
+<option>Info</option>
+<option>Warning</option>
+<option>Critical</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none">warning</span>
+</div>
+</div>
+</div>
+<!-- Main Data Table Container -->
+<div class="xl:col-span-12 bg-surface-container border border-surface-variant rounded-lg overflow-hidden flex flex-col h-[600px]">
+<div class="p-md border-b border-surface-variant bg-surface-container-high flex justify-between items-center">
+<h3 class="font-label-caps text-on-surface-variant">System Activity Log</h3>
+<div class="flex items-center gap-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-fixed-dim opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary-fixed-dim shadow-[0_0_8px_#00dbe9]"></span>
+</span>
+<span class="font-body-sm text-primary-fixed-dim">Live Feed Active</span>
+</div>
+</div>
+<div class="flex-1 overflow-auto custom-scrollbar">
+<table class="w-full text-left border-collapse min-w-[1000px]">
+<thead class="sticky top-0 bg-surface-container-high border-b border-surface-variant z-10">
+<tr>
+<th class="py-sm px-md font-label-caps text-outline w-[160px]">Timestamp (UTC)</th>
+<th class="py-sm px-md font-label-caps text-outline w-[200px]">User / Service</th>
+<th class="py-sm px-md font-label-caps text-outline w-[200px]">Action</th>
+<th class="py-sm px-md font-label-caps text-outline">Entity Details</th>
+<th class="py-sm px-md font-label-caps text-outline w-[140px]">IP Address</th>
+<th class="py-sm px-md font-label-caps text-outline w-[80px]">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-on-surface divide-y divide-surface-variant bg-surface">
+<!-- Row 1: Critical Event -->
+<tr class="hover:bg-surface-container transition-colors group cursor-pointer">
+<td class="py-md px-md font-mono-data text-outline-variant group-hover:text-on-surface-variant">2023-10-27 14:32:01</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-sm">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden flex-shrink-0">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A small, circular avatar portrait of a rugged male character, stylized with a dark, gritty eSports aesthetic. The background is a stark black, and the lighting highlights sharp facial features with a subtle hint of neon cyan. Suitable for a high-end gaming guild UI element." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1UbDx9Eje20OH6HOvylKyGGXARajA0hS95mn1M0GGYIaWKqhU2OrEUSx26qw6FeQdThD-GChF3LjVPnAxE1oGSdp9_dorEp80FIrTm2G3IUgRuhcFp1imCL3T8NvSvOwt3z1JLX0UZgm4XlnkPDVK3u70izcvYVaH78Jm05_OwTzc3CqbNey_c_zbGDF4s_qknkZL21gbJNAaygErdbVawkVzGFXXBh6Cyb5wuh_s5RPUKjerRtvaGwd8TOrTxN9-f47pDnm5iA"/>
+</div>
+<span class="font-medium">Kael_The_Wise</span>
+</div>
+</td>
+<td class="py-md px-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Treasury Withdrawal</span>
+<span class="text-xs text-outline">Vault: Alpha Sector</span>
+</div>
+</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-error text-[16px]">account_balance</span>
+<span class="font-mono-data text-on-surface">-5,000.00 G-COIN</span>
+</div>
+</td>
+<td class="py-md px-md font-mono-data text-outline-variant">192.168.1.104</td>
+<td class="py-md px-md">
+<div class="flex items-center justify-center w-6 h-6 rounded bg-error/10 border border-error/20" title="Success">
+<span class="material-symbols-outlined text-error text-[14px]">done</span>
+</div>
+</td>
+</tr>
+<!-- Row 2: Standard Info -->
+<tr class="hover:bg-surface-container transition-colors group cursor-pointer">
+<td class="py-md px-md font-mono-data text-outline-variant group-hover:text-on-surface-variant">2023-10-27 14:28:45</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-sm">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden flex-shrink-0">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A small, circular avatar portrait of a female character, stylized with a clean, futuristic aesthetic. The background is a stark black, and the lighting is soft with a rim light of pale blue. Suitable for a high-end gaming guild UI element." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBv78KYQvFlvxC368Y9OkEvdE_veWekJaqkh-nhCp8UuR_keLE9czUZe5-tkFnflb9gwlu5JWGuothQ5_bSH6A_rv9ejbD1bnOPxDjubRuzRrpY3n-ddFDXkJdIyJGr2QfPWs2OM49KuqtsskYavJ6DJQ5lJpH1_ywZsSMAAW1uWPahxBV1F64-E5QCOzmrYiidpWeZVFqZEOPUZEiuIMoVqCLrUl-KlWjgizO9780KfpNOF7fu4gMG44ttpdlAMxYjQb4K7-5k5A"/>
+</div>
+<span class="font-medium">Nova_Strike</span>
+</div>
+</td>
+<td class="py-md px-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Trade Created</span>
+<span class="text-xs text-outline">P2P Marketplace</span>
+</div>
+</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-sm text-outline-variant">
+<span class="material-symbols-outlined text-[16px]">inventory_2</span>
+<span class="font-mono-data truncate max-w-[180px]" title="ID: TRD-892-XTQ (Item: Obsidian Blade)">TRD-892-XTQ (Obsidian Blade)</span>
+</div>
+</td>
+<td class="py-md px-md font-mono-data text-outline-variant">203.0.113.42</td>
+<td class="py-md px-md">
+<div class="flex items-center justify-center w-6 h-6 rounded bg-primary-container/10 border border-primary-fixed-dim/20" title="Success">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[14px]">done</span>
+</div>
+</td>
+</tr>
+<!-- Row 3: Admin Action -->
+<tr class="hover:bg-surface-container transition-colors group cursor-pointer">
+<td class="py-md px-md font-mono-data text-outline-variant group-hover:text-on-surface-variant">2023-10-27 14:15:10</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-sm">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden flex-shrink-0 border border-secondary">
+<span class="material-symbols-outlined text-secondary text-[16px] w-full h-full flex items-center justify-center">smart_toy</span>
+</div>
+<span class="font-medium text-secondary">System_Daemon</span>
+</div>
+</td>
+<td class="py-md px-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Role Assigned</span>
+<span class="text-xs text-outline">Automated Rule</span>
+</div>
+</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-sm">
+<span class="px-2 py-0.5 rounded bg-surface-variant text-xs font-mono-data text-on-surface">User: Jxck_99</span>
+<span class="material-symbols-outlined text-outline-variant text-[14px]">arrow_right_alt</span>
+<span class="px-2 py-0.5 rounded bg-secondary/10 text-secondary text-xs font-bold border border-secondary/20">Veteran</span>
+</div>
+</td>
+<td class="py-md px-md font-mono-data text-outline-variant">Internal</td>
+<td class="py-md px-md">
+<div class="flex items-center justify-center w-6 h-6 rounded bg-primary-container/10 border border-primary-fixed-dim/20" title="Success">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[14px]">done</span>
+</div>
+</td>
+</tr>
+<!-- Row 4: Warning/Failed Auth -->
+<tr class="hover:bg-surface-container transition-colors group cursor-pointer bg-surface-container/30">
+<td class="py-md px-md font-mono-data text-outline-variant group-hover:text-on-surface-variant">2023-10-27 13:55:02</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-sm text-outline-variant">
+<span class="material-symbols-outlined text-[16px]">help_outline</span>
+<span class="font-medium italic">Unknown</span>
+</div>
+</td>
+<td class="py-md px-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Auth Event</span>
+<span class="text-xs text-error">Failed Login Attempt</span>
+</div>
+</td>
+<td class="py-md px-md">
+<span class="font-mono-data text-outline-variant">Target Account: Admin_Root</span>
+</td>
+<td class="py-md px-md font-mono-data text-outline-variant">185.199.108.153</td>
+<td class="py-md px-md">
+<div class="flex items-center justify-center w-6 h-6 rounded bg-error/10 border border-error/50" title="Failed">
+<span class="material-symbols-outlined text-error text-[14px]">close</span>
+</div>
+</td>
+</tr>
+<!-- Placeholder rows for visual density -->
+<tr class="hover:bg-surface-container transition-colors group cursor-pointer">
+<td class="py-md px-md font-mono-data text-outline-variant group-hover:text-on-surface-variant">2023-10-27 13:42:18</td>
+<td class="py-md px-md"><div class="flex items-center gap-sm"><span class="font-medium">Nova_Strike</span></div></td>
+<td class="py-md px-md"><div class="flex flex-col"><span class="font-bold text-on-surface">Trade Completed</span></div></td>
+<td class="py-md px-md"><div class="flex items-center gap-sm text-outline-variant"><span class="font-mono-data">TRD-891-XXX</span></div></td>
+<td class="py-md px-md font-mono-data text-outline-variant">203.0.113.42</td>
+<td class="py-md px-md"><div class="flex items-center justify-center w-6 h-6 rounded bg-primary-container/10 border border-primary-fixed-dim/20"><span class="material-symbols-outlined text-primary-fixed-dim text-[14px]">done</span></div></td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors group cursor-pointer">
+<td class="py-md px-md font-mono-data text-outline-variant group-hover:text-on-surface-variant">2023-10-27 13:10:05</td>
+<td class="py-md px-md"><div class="flex items-center gap-sm"><span class="font-medium">Kael_The_Wise</span></div></td>
+<td class="py-md px-md"><div class="flex flex-col"><span class="font-bold text-on-surface">Settings Updated</span><span class="text-xs text-outline">Guild Info</span></div></td>
+<td class="py-md px-md"><span class="font-mono-data text-outline-variant">Changed MOTD</span></td>
+<td class="py-md px-md font-mono-data text-outline-variant">192.168.1.104</td>
+<td class="py-md px-md"><div class="flex items-center justify-center w-6 h-6 rounded bg-primary-container/10 border border-primary-fixed-dim/20"><span class="material-symbols-outlined text-primary-fixed-dim text-[14px]">done</span></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination -->
+<div class="p-sm border-t border-surface-variant bg-surface-container flex items-center justify-between text-body-sm text-outline-variant">
+<span>Showing 1-6 of 2,491 events</span>
+<div class="flex items-center gap-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-variant transition-colors disabled:opacity-50"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-variant text-on-surface font-medium">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-variant transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-variant transition-colors">3</button>
+<span class="px-1">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-variant transition-colors disabled:opacity-50"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-dim/90 backdrop-blur-lg border-t border-surface-variant shadow-2xl shadow-primary-container/10">
+<a class="flex flex-col items-center justify-center text-outline-variant active:bg-surface-variant tap-highlight-transparent p-2 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] uppercase font-bold tracking-widest mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline-variant active:bg-surface-variant tap-highlight-transparent p-2 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[24px]">search</span>
+<span class="text-[10px] uppercase font-bold tracking-widest mt-1">Market</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline-variant active:bg-surface-variant tap-highlight-transparent p-2 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[24px]">account_balance_wallet</span>
+<span class="text-[10px] uppercase font-bold tracking-widest mt-1">Trades</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary-fixed-dim bg-primary-fixed/5 rounded-xl py-1 px-3 active:bg-surface-variant tap-highlight-transparent" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-[10px] uppercase font-bold tracking-widest mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

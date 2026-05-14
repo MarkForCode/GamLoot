@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Advanced Reporting - GAM SaaS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#605f5e",
+                        "surface-container": "#122131",
+                        "surface": "#051424",
+                        "tertiary-container": "#dcd9d8",
+                        "on-background": "#d4e4fa",
+                        "on-secondary": "#520071",
+                        "surface-container-low": "#0d1c2d",
+                        "on-primary-fixed-variant": "#004f54",
+                        "surface-variant": "#273647",
+                        "primary-container": "#00f0ff",
+                        "on-primary": "#00363a",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#ecb2ff",
+                        "surface-dim": "#051424",
+                        "outline": "#849495",
+                        "surface-container-lowest": "#010f1f",
+                        "primary-fixed-dim": "#00dbe9",
+                        "secondary-fixed": "#f8d8ff",
+                        "background": "#051424",
+                        "on-primary-fixed": "#002022",
+                        "on-tertiary": "#313030",
+                        "inverse-on-surface": "#233143",
+                        "error": "#ffb4ab",
+                        "secondary": "#ecb2ff",
+                        "surface-container-high": "#1c2b3c",
+                        "secondary-container": "#cf5cff",
+                        "on-primary-container": "#006970",
+                        "on-secondary-container": "#480063",
+                        "on-tertiary-fixed-variant": "#474646",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "tertiary-fixed": "#e5e2e1",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "primary-fixed": "#7df4ff",
+                        "on-surface-variant": "#b9cacb",
+                        "on-error": "#690005",
+                        "inverse-surface": "#d4e4fa",
+                        "surface-bright": "#2c3a4c",
+                        "on-secondary-fixed-variant": "#74009f",
+                        "surface-container-highest": "#273647",
+                        "inverse-primary": "#006970",
+                        "outline-variant": "#3b494b",
+                        "on-surface": "#d4e4fa",
+                        "on-secondary-fixed": "#320047",
+                        "error-container": "#93000a",
+                        "primary": "#dbfcff",
+                        "tertiary": "#f9f5f5",
+                        "surface-tint": "#00dbe9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "unit": "4px",
+                        "md": "16px",
+                        "2xl": "48px",
+                        "margin": "24px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "3xl": "64px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "mono-data": ["monospace"],
+                        "label-caps": ["Inter"],
+                        "h3": ["Inter"],
+                        "h2": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "h1": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                        "mono-data": ["14px", {"lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "700"}],
+                        "h3": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "h2": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Specific Custom Scrollbar for Dark Gamer UI */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #051424; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #273647; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00dbe9; 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col md:flex-row overflow-x-hidden selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar (WEB) -->
+<nav class="hidden lg:flex flex-col h-screen sticky top-0 bg-zinc-950/90 backdrop-blur-xl docked left-0 w-64 border-r border-zinc-800 shadow-2xl shadow-black/50 z-40">
+<!-- Header -->
+<div class="p-lg border-b border-zinc-800 flex items-center gap-md">
+<div class="w-xl h-xl rounded bg-surface-container-high flex items-center justify-center shrink-0 border border-outline-variant overflow-hidden">
+<img alt="Guild Realm Icon" class="w-full h-full object-cover" data-alt="A striking neon-lit futuristic crest logo featuring sharp geometric angles in electric cyan and deep violet on a matte black background. Professional esports or high-end gaming guild aesthetic, highly detailed, 4k." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACsLTAa20QybcUq8w-XPxX_RjZxynWCGF5NQCiFZZC5ePmt1acoK9DaUIxZJDENj1uCVakiV69OqUNm6fi3tTB77DOGQ_Oe9a8ynzdnDtcWr1KQmqW94Vf3CzK8hSnKtN8tVS3gayh2cNjm8rVzipyNg3NYWhjluNkKFp4GzDtR0Uzqa9C1HGRTqdvBWkJjUe53JSwLSWm2NKZExjzq4EsYMfF86qLIf21qDkVUmwg32Q-RmnzbPpLMkdbDcOSf4Q0N7F7OsgZ7g"/>
+</div>
+<div class="overflow-hidden">
+<h2 class="text-lg font-black text-white truncate font-h3 text-h3 leading-none">Neon Syndicate</h2>
+<p class="text-on-surface-variant font-label-caps text-label-caps truncate mt-xs">Global Realm</p>
+</div>
+</div>
+<!-- Scrollable Navigation Items -->
+<div class="flex-1 overflow-y-auto py-md px-sm space-y-unit">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-inter text-xs uppercase tracking-widest font-bold group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-inter text-xs uppercase tracking-widest font-bold group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors" data-icon="gavel">gavel</span>
+                Disputes
+            </a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-inter text-xs uppercase tracking-widest font-bold group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors" data-icon="inventory_2">inventory_2</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-inter text-xs uppercase tracking-widest font-bold group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors" data-icon="insights">insights</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-inter text-xs uppercase tracking-widest font-bold group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors" data-icon="groups">groups</span>
+                Guilds
+            </a>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-cyan-400 bg-cyan-400/10 border-r-2 border-cyan-400 font-inter text-xs uppercase tracking-widest font-bold group active:translate-x-1 transition-transform relative" href="#">
+<span class="material-symbols-outlined text-lg fill-icon" data-icon="assessment">assessment</span>
+                Reports
+                <!-- Active Glow Indicator -->
+<div class="absolute inset-y-0 right-0 w-[2px] bg-primary shadow-[0_0_8px_rgba(0,219,233,0.8)]"></div>
+</a>
+</div>
+<!-- Footer / CTA -->
+<div class="p-md border-t border-zinc-800 space-y-md">
+<button class="w-full bg-primary hover:bg-primary-fixed text-on-primary font-label-caps text-label-caps py-sm px-md rounded transition-colors active:scale-95 duration-150 flex items-center justify-center gap-xs shadow-[inset_0_0_8px_rgba(255,255,255,0.2)] border border-primary-fixed">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Trade
+            </button>
+<div class="space-y-unit">
+<a class="flex items-center gap-sm px-sm py-[6px] rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-inter text-xs uppercase tracking-widest font-bold group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors" data-icon="headset_mic">headset_mic</span>
+                    Support
+                </a>
+<a class="flex items-center gap-sm px-sm py-[6px] rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-inter text-xs uppercase tracking-widest font-bold group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors" data-icon="account_circle">account_circle</span>
+                    Account
+                </a>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- TopNavBar (WEB/MOBILE HYBRID) -->
+<header class="bg-black/80 backdrop-blur-md docked full-width top-0 z-50 border-b border-zinc-800 shadow-none flex justify-between items-center h-16 px-6 w-full sticky">
+<!-- Mobile Menu Toggle (Visible only md down) -->
+<button class="lg:hidden text-zinc-400 hover:text-cyan-300 transition-colors p-xs rounded-md">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Brand / Search -->
+<div class="flex items-center gap-lg flex-1">
+<h1 class="text-xl font-black tracking-tighter text-cyan-400 uppercase hidden lg:block active:scale-95 duration-150 cursor-pointer hover:text-cyan-300 transition-colors">GAM SaaS</h1>
+<!-- Search Bar -->
+<div class="relative max-w-md w-full ml-0 lg:ml-lg hidden md:block group">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-high border-b border-outline-variant focus:border-primary text-on-surface py-xs pl-[36px] pr-sm text-body-sm font-body-sm rounded-t focus:outline-none focus:ring-0 transition-colors placeholder:text-on-surface-variant/50" placeholder="Search analytics, members..." type="text"/>
+</div>
+</div>
+<!-- Actions / Profile -->
+<div class="flex items-center gap-sm md:gap-md">
+<button class="text-zinc-400 hover:text-cyan-300 transition-colors p-xs rounded-full active:scale-95 duration-150 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full shadow-[0_0_6px_rgba(255,180,171,0.8)]"></span>
+</button>
+<button class="text-zinc-400 hover:text-cyan-300 transition-colors p-xs rounded-full active:scale-95 duration-150 hidden sm:block">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="text-zinc-400 hover:text-cyan-300 transition-colors p-xs rounded-full active:scale-95 duration-150 hidden sm:block">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full border border-primary-container overflow-hidden ml-xs cursor-pointer active:scale-95 transition-transform">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A stylized portrait of an elite gamer with vibrant magenta and cyan neon rim lighting against a very dark background. The avatar exudes professional competence and a high-tech aesthetic, highly detailed, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAArSkGFYFjd-gwqehhvfNyZasPgLkwDfbRy3POT7qog9aiSVS33UL_db00Z52NJc_-20FxdPYkjLZ_A294w35qC7AxV5vy2-25p5Rx3xa84zmT38GsVp71xrXVPFKdIC6-EWdx90sDCuXAQzJOFDiEGNmYxHf4B78mi5Kks7xWy3VJCx-iLtGE3yjYs-3nofq_ig8HcX2124QjI1SKAUsE-XTPSEo0ukJ_ualQifdkTuoqizW_MUdWH6vT7ED4SxWaGXOpeEjWg"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 p-md md:p-lg lg:p-margin space-y-margin overflow-y-auto">
+<!-- Page Header & Filters -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<h1 class="font-h2 text-h2 text-on-surface">Advanced Reporting</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-unit">Cycle 42 Analytics &amp; Guild Performance Metrics</p>
+</div>
+<div class="flex flex-wrap items-center gap-sm">
+<!-- Platform Filter -->
+<div class="relative">
+<select class="appearance-none bg-surface-container-high border border-outline-variant text-on-surface py-xs pl-sm pr-xl rounded font-body-sm text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors cursor-pointer">
+<option>All Platforms</option>
+<option>PC / Steam</option>
+<option>Console</option>
+<option>Mobile</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px]">arrow_drop_down</span>
+</div>
+<!-- Time Range Filter -->
+<div class="flex bg-surface-container-low border border-outline-variant rounded p-[2px]">
+<button class="px-sm py-xs rounded text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface transition-colors">7d</button>
+<button class="px-sm py-xs rounded text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface transition-colors">30d</button>
+<button class="px-sm py-xs rounded text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface transition-colors">90d</button>
+<button class="px-sm py-xs rounded bg-surface-container-highest text-primary font-bold shadow-[inset_0_0_0_1px_rgba(0,219,233,0.3)] transition-colors">Cycle</button>
+</div>
+<button class="bg-transparent border border-primary text-primary hover:bg-primary/10 px-md py-xs rounded font-label-caps text-label-caps uppercase transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">download</span> Export
+                    </button>
+</div>
+</div>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- KPI 1 -->
+<div class="bg-[#121212] border border-[#2A2A2A] rounded-xl p-md flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-xl -top-xl w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors"></div>
+<div class="flex items-start justify-between relative z-10">
+<div class="flex items-center gap-xs">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-primary border border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Total Volume</span>
+</div>
+<div class="flex items-center gap-[2px] text-primary bg-primary/10 px-xs py-[2px] rounded border border-primary/20">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="font-mono-data text-[12px]">+14.2%</span>
+</div>
+</div>
+<div class="mt-lg relative z-10">
+<div class="font-h2 text-h2 text-on-surface leading-none tracking-tight">42,891 <span class="text-on-surface-variant text-body-lg font-body-lg">Cr</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-unit">vs 37,500 last cycle</p>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-[#121212] border border-[#2A2A2A] rounded-xl p-md flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-xl -top-xl w-32 h-32 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-colors"></div>
+<div class="flex items-start justify-between relative z-10">
+<div class="flex items-center gap-xs">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-secondary border border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Avg Profit/Trade</span>
+</div>
+<div class="flex items-center gap-[2px] text-secondary bg-secondary/10 px-xs py-[2px] rounded border border-secondary/20">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="font-mono-data text-[12px]">+5.8%</span>
+</div>
+</div>
+<div class="mt-lg relative z-10">
+<div class="font-h2 text-h2 text-on-surface leading-none tracking-tight">1,240 <span class="text-on-surface-variant text-body-lg font-body-lg">Cr</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-unit">Top decile performance</p>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-[#121212] border border-[#2A2A2A] rounded-xl p-md flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-xl -top-xl w-32 h-32 bg-error/5 rounded-full blur-2xl group-hover:bg-error/10 transition-colors"></div>
+<div class="flex items-start justify-between relative z-10">
+<div class="flex items-center gap-xs">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-on-surface border border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">group_add</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Guild Growth</span>
+</div>
+<div class="flex items-center gap-[2px] text-error bg-error/10 px-xs py-[2px] rounded border border-error/20">
+<span class="material-symbols-outlined text-[14px]">trending_down</span>
+<span class="font-mono-data text-[12px]">-2.1%</span>
+</div>
+</div>
+<div class="mt-lg relative z-10">
+<div class="font-h2 text-h2 text-on-surface leading-none tracking-tight">142 <span class="text-on-surface-variant text-body-lg font-body-lg">Active</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-unit">Net change: -3 members</p>
+</div>
+</div>
+</div>
+<!-- Charts Section (Asymmetric Layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+<!-- Main Line Chart (Spans 2 columns) -->
+<div class="lg:col-span-2 bg-[#121212] border border-[#2A2A2A] rounded-xl flex flex-col">
+<div class="p-md border-b border-[#2A2A2A] flex justify-between items-center">
+<h3 class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Revenue Trends</h3>
+<div class="flex items-center gap-sm">
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_6px_rgba(0,219,233,0.8)]"></div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Current Cycle</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Last Cycle</span>
+</div>
+<button class="ml-sm text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</div>
+</div>
+<div class="p-md flex-1 min-h-[300px] relative flex flex-col justify-end">
+<!-- Faux Chart Representation using CSS for structure -->
+<div class="absolute inset-y-md inset-x-md flex flex-col justify-between pointer-events-none opacity-20">
+<div class="border-t border-outline border-dashed w-full"></div>
+<div class="border-t border-outline border-dashed w-full"></div>
+<div class="border-t border-outline border-dashed w-full"></div>
+<div class="border-t border-outline border-dashed w-full"></div>
+<div class="border-t border-outline border-dashed w-full"></div>
+</div>
+<!-- Decorative SVG Line Graph Representation -->
+<div class="relative w-full h-[80%] mt-auto flex items-end">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Last Cycle (Ghost Line) -->
+<polyline fill="none" points="0,80 10,75 20,85 30,60 40,65 50,40 60,50 70,30 80,45 90,20 100,25" stroke="#3b494b" stroke-dasharray="4" stroke-width="1.5"></polyline>
+<!-- Current Cycle (Primary Neon Line) -->
+<defs>
+<lineargradient id="neonGlow" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#00dbe9" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#00dbe9" stop-opacity="0"></stop>
+</lineargradient>
+<filter id="glow">
+<fegaussianblur result="coloredBlur" stddeviation="1.5"></fegaussianblur>
+<femerge>
+<femergenode in="coloredBlur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+</defs>
+<polygon fill="url(#neonGlow)" points="0,100 0,90 10,70 20,75 30,45 40,30 50,35 60,15 70,25 80,10 90,5 100,15 100,100"></polygon>
+<polyline fill="none" filter="url(#glow)" points="0,90 10,70 20,75 30,45 40,30 50,35 60,15 70,25 80,10 90,5 100,15" stroke="#00dbe9" stroke-width="2"></polyline>
+<!-- Data Points -->
+<circle cx="40" cy="30" fill="#00dbe9" r="1.5"></circle>
+<circle cx="60" cy="15" fill="#00dbe9" r="1.5"></circle>
+<circle cx="90" cy="5" fill="#ffffff" filter="url(#glow)" r="1.5"></circle>
+</svg>
+<!-- Hover Tooltip Faux -->
+<div class="absolute top-[5%] right-[10%] bg-surface-container-high border border-primary p-sm rounded shadow-[0_4px_12px_rgba(0,0,0,0.5)] transform -translate-x-1/2 -translate-y-full mb-unit pointer-events-none">
+<div class="font-label-caps text-label-caps text-on-surface-variant">Day 24</div>
+<div class="font-mono-data text-primary text-[14px] font-bold">12,450 Cr</div>
+<div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-surface-container-high border-b border-r border-primary rotate-45"></div>
+</div>
+</div>
+<!-- X-Axis Labels -->
+<div class="flex justify-between w-full mt-sm font-mono-data text-[10px] text-on-surface-variant opacity-70">
+<span>01</span>
+<span>05</span>
+<span>10</span>
+<span>15</span>
+<span>20</span>
+<span>25</span>
+<span>30</span>
+</div>
+</div>
+</div>
+<!-- Bar Chart (Spans 1 column) -->
+<div class="bg-[#121212] border border-[#2A2A2A] rounded-xl flex flex-col">
+<div class="p-md border-b border-[#2A2A2A] flex justify-between items-center">
+<h3 class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Top Categories</h3>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">filter_list</span></button>
+</div>
+<div class="p-md flex-1 flex flex-col justify-center gap-md">
+<!-- Bar 1 -->
+<div>
+<div class="flex justify-between font-body-sm text-body-sm mb-unit">
+<span class="text-on-surface">Materials</span>
+<span class="font-mono-data text-on-surface-variant">45%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full shadow-[0_0_8px_rgba(0,219,233,0.5)]" style="width: 45%;"></div>
+</div>
+</div>
+<!-- Bar 2 -->
+<div>
+<div class="flex justify-between font-body-sm text-body-sm mb-unit">
+<span class="text-on-surface">Consumables</span>
+<span class="font-mono-data text-on-surface-variant">32%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full shadow-[0_0_8px_rgba(236,178,255,0.5)]" style="width: 32%;"></div>
+</div>
+</div>
+<!-- Bar 3 -->
+<div>
+<div class="flex justify-between font-body-sm text-body-sm mb-unit">
+<span class="text-on-surface">Gear &amp; Weapons</span>
+<span class="font-mono-data text-on-surface-variant">18%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-fixed-dim rounded-full" style="width: 18%;"></div>
+</div>
+</div>
+<!-- Bar 4 -->
+<div>
+<div class="flex justify-between font-body-sm text-body-sm mb-unit">
+<span class="text-on-surface">Blueprints</span>
+<span class="font-mono-data text-on-surface-variant">5%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-outline-variant rounded-full" style="width: 5%;"></div>
+</div>
+</div>
+<div class="mt-auto pt-sm flex justify-center">
+<a class="text-primary font-body-sm text-body-sm hover:underline hover:text-primary-fixed transition-colors" href="#">View full breakdown</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Leaderboard Data Table -->
+<div class="bg-[#121212] border border-[#2A2A2A] rounded-xl flex flex-col overflow-hidden">
+<div class="p-md border-b border-[#2A2A2A] flex justify-between items-center bg-[#181818]">
+<h3 class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">military_tech</span>
+                        Top Performing Members
+                    </h3>
+<div class="flex gap-sm">
+<button class="bg-surface-container border border-outline-variant px-sm py-xs rounded font-body-sm text-body-sm text-on-surface hover:border-primary transition-colors">By Volume</button>
+<button class="bg-transparent border border-transparent px-sm py-xs rounded font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors">By Profit</button>
+</div>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[600px]">
+<thead>
+<tr class="border-b border-[#2A2A2A] bg-[#121212]">
+<th class="p-sm px-md font-label-caps text-label-caps text-on-surface-variant uppercase w-12 text-center">Rank</th>
+<th class="p-sm px-md font-label-caps text-label-caps text-on-surface-variant uppercase">Operative</th>
+<th class="p-sm px-md font-label-caps text-label-caps text-on-surface-variant uppercase text-right">Trades Executed</th>
+<th class="p-sm px-md font-label-caps text-label-caps text-on-surface-variant uppercase text-right">Total Volume (Cr)</th>
+<th class="p-sm px-md font-label-caps text-label-caps text-on-surface-variant uppercase text-center">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm">
+<!-- Row 1 -->
+<tr class="border-b border-[#2A2A2A] hover:bg-[#1E1E1E] transition-colors group">
+<td class="p-sm px-md text-center font-mono-data text-primary font-bold">01</td>
+<td class="p-sm px-md">
+<div class="flex items-center gap-sm">
+<img alt="Avatar" class="w-8 h-8 rounded bg-surface-container" data-alt="Small square avatar of a cybernetic male character with neon blue glowing eyes and dark tactical gear. Dark background, sharp focus, 4k." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBBaNCquEV0a7xSz-XOfNJU-ghteUuBHBnwhK-H4crluwtW0gG9tF_8PJhe_78VSReXkENOO00bJlnxHtydM0to8kt4U9t3p38MET_dIeuLyuyb-DY2jlxnPLJUR3z9drSlBfo9Bsp_PKQPAcXpjWPN5shch1tL-uhz0XkhNWeZn8at1glGg9ODzR8NTwuWKx9-5_5TiQl_nHPdP6Apr5znP3OOEPSF6Vq8kfwt_escebSBh1o_6ZurXkLBhFPrgB5J0jNuALgsQ"/>
+<div>
+<div class="text-on-surface font-bold group-hover:text-primary transition-colors">Cipher_Null</div>
+<div class="text-[10px] text-on-surface-variant font-mono-data">ID: #8902A</div>
+</div>
+</div>
+</td>
+<td class="p-sm px-md text-right font-mono-data">1,204</td>
+<td class="p-sm px-md text-right font-mono-data text-on-surface">18,500</td>
+<td class="p-sm px-md text-center">
+<div class="inline-flex items-center gap-xs border border-[#2A2A2A] bg-surface-container-low px-xs py-[2px] rounded-full">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_4px_rgba(0,219,233,0.8)]"></div>
+<span class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Live</span>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-[#2A2A2A] hover:bg-[#1E1E1E] transition-colors group">
+<td class="p-sm px-md text-center font-mono-data text-on-surface-variant">02</td>
+<td class="p-sm px-md">
+<div class="flex items-center gap-sm">
+<img alt="Avatar" class="w-8 h-8 rounded bg-surface-container" data-alt="Small square avatar, abstract geometric render in deep purple and cyan colors, looking like a high-tech corporate logo. Dark background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRHYurfHnGRfKyAUsv-RfqSrHdr9NZzLAlP1zR62pqVdQXBOBs_RaHKlZseq24vWlhRqa8KO3EHGx19j9eMJIBLdJYhvgDCcF0Qi8uaa68YT2kNyqEnJY8Uu5bE7QzC9tNtC9SYrt00R-ZTo20r3OtwZFdHn8Up09WrSXKxecaAkTC1PhVeCdSo_ohWLa2fmQ_sbCTbtPYH6aD62eM-QMiCdW12HQBFBmfMbQW5NfDBpCV8EKU1EHbCbEYLGGw4q5oTZkRwUe1Aw"/>
+<div>
+<div class="text-on-surface font-bold group-hover:text-primary transition-colors">Vanguard.X</div>
+<div class="text-[10px] text-on-surface-variant font-mono-data">ID: #4419B</div>
+</div>
+</div>
+</td>
+<td class="p-sm px-md text-right font-mono-data">982</td>
+<td class="p-sm px-md text-right font-mono-data text-on-surface">14,230</td>
+<td class="p-sm px-md text-center">
+<div class="inline-flex items-center gap-xs border border-[#2A2A2A] bg-surface-container-low px-xs py-[2px] rounded-full opacity-60">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<span class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Idle</span>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-[#1E1E1E] transition-colors group">
+<td class="p-sm px-md text-center font-mono-data text-on-surface-variant">03</td>
+<td class="p-sm px-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-secondary-container/20 border border-secondary/30 flex items-center justify-center text-secondary font-bold text-xs">
+                                            R9
+                                        </div>
+<div>
+<div class="text-on-surface font-bold group-hover:text-primary transition-colors">Rogue_Nine</div>
+<div class="text-[10px] text-on-surface-variant font-mono-data">ID: #1105C</div>
+</div>
+</div>
+</td>
+<td class="p-sm px-md text-right font-mono-data">845</td>
+<td class="p-sm px-md text-right font-mono-data text-on-surface">12,100</td>
+<td class="p-sm px-md text-center">
+<div class="inline-flex items-center gap-xs border border-[#2A2A2A] bg-surface-container-low px-xs py-[2px] rounded-full">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_4px_rgba(0,219,233,0.8)]"></div>
+<span class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Live</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (MOBILE ONLY) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-black/90 backdrop-blur-lg border-t border-zinc-800 shadow-[0_-4px_20px_rgba(0,0,0,0.8)] z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-white group" href="#">
+<span class="material-symbols-outlined text-[24px] mb-xs group-active:scale-90 transition-transform" data-icon="grid_view">grid_view</span>
+<span class="font-inter text-[10px] font-bold uppercase">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-white group" href="#">
+<span class="material-symbols-outlined text-[24px] mb-xs group-active:scale-90 transition-transform" data-icon="emergency_home">emergency_home</span>
+<span class="font-inter text-[10px] font-bold uppercase">Disputes</span>
+</a>
+<!-- ACTIVE -->
+<a class="flex flex-col items-center justify-center bg-cyan-500/20 text-cyan-400 rounded-lg py-1 px-4 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined text-[24px] mb-xs fill-icon" data-icon="show_chart">show_chart</span>
+<span class="font-inter text-[10px] font-bold uppercase">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-white group" href="#">
+<span class="material-symbols-outlined text-[24px] mb-xs group-active:scale-90 transition-transform" data-icon="menu">menu</span>
+<span class="font-inter text-[10px] font-bold uppercase">Menu</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GAM - Guild Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error-container": "#93000a",
+                      "primary-fixed-dim": "#00dbe9",
+                      "on-tertiary-fixed": "#1c1b1b",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-low": "#0d1c2d",
+                      "on-secondary-fixed": "#320047",
+                      "outline": "#849495",
+                      "primary-fixed": "#7df4ff",
+                      "surface-dim": "#051424",
+                      "on-primary": "#00363a",
+                      "on-background": "#d4e4fa",
+                      "tertiary-container": "#dcd9d8",
+                      "surface-container-high": "#1c2b3c",
+                      "background": "#051424",
+                      "surface-variant": "#273647",
+                      "tertiary": "#f9f5f5",
+                      "primary": "#dbfcff",
+                      "surface-container-highest": "#273647",
+                      "outline-variant": "#3b494b",
+                      "inverse-surface": "#d4e4fa",
+                      "inverse-primary": "#006970",
+                      "secondary": "#ecb2ff",
+                      "on-surface-variant": "#b9cacb",
+                      "on-secondary": "#520071",
+                      "secondary-fixed": "#f8d8ff",
+                      "on-surface": "#d4e4fa",
+                      "on-primary-container": "#006970",
+                      "secondary-container": "#cf5cff",
+                      "surface-container": "#122131",
+                      "on-tertiary-container": "#605f5e",
+                      "on-tertiary-fixed-variant": "#474646",
+                      "primary-container": "#00f0ff",
+                      "surface": "#051424",
+                      "tertiary-fixed-dim": "#c8c6c5",
+                      "on-primary-fixed": "#002022",
+                      "on-primary-fixed-variant": "#004f54",
+                      "secondary-fixed-dim": "#ecb2ff",
+                      "on-secondary-fixed-variant": "#74009f",
+                      "tertiary-fixed": "#e5e2e1",
+                      "error": "#ffb4ab",
+                      "on-secondary-container": "#480063",
+                      "surface-bright": "#2c3a4c",
+                      "surface-tint": "#00dbe9",
+                      "surface-container-lowest": "#010f1f",
+                      "inverse-on-surface": "#233143",
+                      "on-error": "#690005",
+                      "on-tertiary": "#313030"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin": "24px",
+                      "lg": "24px",
+                      "2xl": "48px",
+                      "gutter": "20px",
+                      "xl": "32px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "3xl": "64px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "mono-data": [
+                              "monospace"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "h1": [
+                              "Inter"
+                      ],
+                      "h2": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "h3": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "mono-data": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "h2": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h3": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.08em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .glass-panel {
+            background-color: theme('colors.surface-container');
+            border: 1px solid theme('colors.outline-variant');
+        }
+        .text-glow-primary {
+            text-shadow: 0 0 10px theme('colors.primary-container');
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased min-h-screen flex bg-background">
+<!-- SideNavBar -->
+<nav class="hidden lg:flex flex-col h-screen fixed left-0 top-0 overflow-y-auto bg-zinc-950 docked left-0 h-full w-64 border-r border-zinc-800 shadow-none font-inter text-sm font-medium z-40">
+<div class="p-6 border-b border-zinc-800">
+<div class="flex items-center gap-sm mb-lg">
+<img alt="Guild Logo" class="w-8 h-8 rounded DEFAULT" data-alt="A stylized glowing digital G logo representing a high-tech gaming guild. Set against a dark metallic background. Neon cyan accents illuminate the edges. The aesthetic is cybernetic and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8BgNRbjg9v0YlmRNCXV1cFJ0oaBMXfH1kKzBagyvLRi6bmV-d1FsWdqkFzwSTvDIeUCSAiHYP3bhSkJ_a3C73vhMwU9R8x6p5nIHINOslapNXV_-B4ZMd1pNy5ocdj3a9JfLzDq9HmGABi2BrfIYDdwz6cC6fQ3cUheL2FBQ2Sk0EnckpyEvCLQnhWmQGFpI3Enl1fr6QytbcAaqSoRonc3gvtIjWhWjAqWlfn-BgappmPwivRd_OxoM4D4WbxqgSSBRD2FI7yw"/>
+<div>
+<h1 class="font-black text-cyan-400 text-lg leading-tight">GAM Marketplace</h1>
+<p class="text-zinc-500 text-xs">Pro League Guild</p>
+</div>
+</div>
+<button class="w-full py-2 px-4 border border-outline-variant text-primary-fixed-dim rounded DEFAULT hover:bg-surface-variant transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-sm">swap_horiz</span>
+                Switch Realm
+            </button>
+</div>
+<div class="flex-1 py-lg px-sm space-y-1">
+<a class="flex items-center gap-md px-4 py-3 rounded DEFAULT bg-cyan-500/10 text-cyan-400 border-r-2 border-cyan-400 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 rounded DEFAULT text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 hover:bg-zinc-900 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span>Marketplace</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 rounded DEFAULT text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 hover:bg-zinc-900 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span>Trades</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 rounded DEFAULT text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 hover:bg-zinc-900 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Members</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 rounded DEFAULT text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 hover:bg-zinc-900 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span>Admin</span>
+</a>
+</div>
+<div class="p-4 border-t border-zinc-800 space-y-1">
+<a class="flex items-center gap-md px-4 py-2 rounded DEFAULT text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-md px-4 py-2 rounded DEFAULT text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<main class="flex-1 lg:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full lg:w-[calc(100%-16rem)] z-50 flex justify-between items-center px-6 h-16 bg-zinc-950/80 backdrop-blur-xl docked full-width top-0 border-b border-zinc-800/50 shadow-none font-inter tracking-tight transition-all duration-200">
+<div class="flex items-center gap-md">
+<!-- Search could go here based on "search_bar": "on_left" if implemented fully, keeping clean for now -->
+<div class="hidden md:flex gap-md">
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors hover:bg-zinc-900/50 px-3 py-2 rounded DEFAULT" href="#">Marketplace</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors hover:bg-zinc-900/50 px-3 py-2 rounded DEFAULT" href="#">Trades</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors hover:bg-zinc-900/50 px-3 py-2 rounded DEFAULT" href="#">Analytics</a>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded DEFAULT font-mono-data text-mono-data hover:opacity-90 active:scale-95 transition-all">
+                    Create Listing
+                </button>
+<div class="flex items-center gap-sm">
+<button class="text-zinc-400 hover:text-zinc-100 p-2 rounded-full hover:bg-zinc-900/50 transition-colors">
+<span class="material-symbols-outlined">language</span>
+</button>
+<button class="text-zinc-400 hover:text-zinc-100 p-2 rounded-full hover:bg-zinc-900/50 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-zinc-400 hover:text-zinc-100 p-2 rounded-full hover:bg-zinc-900/50 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2 border border-outline-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A futuristic avatar portrait of a sci-fi character. Moody rim lighting in neon cyan and purple. Cybernetic implants are visible on the jawline. The background is a dark, abstract digital void. The overall feel is gritty but high-end." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGyo1X-46lubMHdZif2y-x_imTusecUKtcF2vB-rZQ1-_aHxPE0vi6hpeyqrfARpMR2FRvxBH1fR8pcvnRL8h2-eJLyUiPVujw388WmwzXkYVH2qGHu91C-5O7fQSoKLh4pSzddtdV4wLJu84lA_JuyR_6_HwAKxZ7b9JFzHssYOLZSgdvizbhJfCQGK2P_d2KBW-R1BXrFcgdnumFtrxD7xz5jyeZ25E0EgVT-0yGg45pbHBZcWQKXU7uRgZGgI7FJrb3Ys_qmg"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="mt-16 p-margin lg:p-2xl max-w-7xl mx-auto w-full space-y-lg">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-md mb-lg">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface mb-xs tracking-tight text-glow-primary">Command Center</h2>
+<p class="text-on-surface-variant font-body-sm text-body-sm">Overview of guild operations and market activity.</p>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-unit">Current Cycle</p>
+<p class="font-mono-data text-mono-data text-primary-fixed-dim">CYC-904.A2</p>
+</div>
+</div>
+<!-- Quick Stats Bento Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Stat Card 1 -->
+<div class="glass-panel p-lg rounded-xl flex flex-col justify-between hover:bg-surface-variant transition-colors group">
+<div class="flex justify-between items-start mb-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Treasury Balance</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary-fixed-dim transition-colors">account_balance</span>
+</div>
+<div>
+<div class="font-h1 text-h1 text-on-surface">24,590 <span class="text-primary-container text-h3">CR</span></div>
+<p class="text-outline font-body-sm text-body-sm mt-xs">+12.5% this cycle</p>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="glass-panel p-lg rounded-xl flex flex-col justify-between hover:bg-surface-variant transition-colors group">
+<div class="flex justify-between items-start mb-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Active Trades</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary-fixed-dim transition-colors">sync_alt</span>
+</div>
+<div>
+<div class="font-h1 text-h1 text-on-surface">142</div>
+<p class="text-outline font-body-sm text-body-sm mt-xs">24 awaiting approval</p>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="glass-panel p-lg rounded-xl flex flex-col justify-between hover:bg-surface-variant transition-colors group">
+<div class="flex justify-between items-start mb-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">New Members</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary-fixed-dim transition-colors">person_add</span>
+</div>
+<div>
+<div class="font-h1 text-h1 text-on-surface">18</div>
+<p class="text-outline font-body-sm text-body-sm mt-xs">Pending review</p>
+</div>
+</div>
+</div>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mt-lg">
+<!-- Guild Announcements (Spans 2 cols) -->
+<div class="lg:col-span-2 glass-panel rounded-xl flex flex-col overflow-hidden">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-h3 text-h3 text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-fixed-dim">campaign</span>
+                            Guild Announcements
+                        </h3>
+<button class="text-primary-fixed-dim font-label-caps text-label-caps hover:text-primary transition-colors">VIEW ALL</button>
+</div>
+<div class="p-0 flex-1 overflow-y-auto max-h-[400px]">
+<!-- Announcement Item 1 -->
+<div class="p-md border-b border-outline-variant/50 hover:bg-surface-variant/30 transition-colors flex gap-md items-start">
+<div class="w-2 h-2 rounded-full bg-primary-container mt-2 shadow-[0_0_8px_theme('colors.primary-container')] shrink-0"></div>
+<div class="flex-1">
+<div class="flex justify-between items-baseline mb-xs">
+<h4 class="font-body-lg text-body-lg text-on-surface font-semibold">Q3 Strategic Realignment</h4>
+<span class="font-mono-data text-mono-data text-outline text-xs">2h ago</span>
+</div>
+<p class="text-on-surface-variant font-body-sm text-body-sm mb-sm line-clamp-2">All squadron leaders are required to submit their updated roster formats by end of cycle. Focus shifts to resource acquisition in Sector 7.</p>
+<div class="flex items-center gap-sm">
+<span class="bg-surface-bright px-2 py-1 rounded DEFAULT font-label-caps text-[10px] text-on-surface-variant border border-outline-variant">URGENT</span>
+<span class="text-primary-fixed-dim font-label-caps text-[10px] flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]">done_all</span> READ</span>
+</div>
+</div>
+</div>
+<!-- Announcement Item 2 -->
+<div class="p-md border-b border-outline-variant/50 hover:bg-surface-variant/30 transition-colors flex gap-md items-start">
+<div class="w-2 h-2 rounded-full bg-outline-variant mt-2 shrink-0"></div>
+<div class="flex-1">
+<div class="flex justify-between items-baseline mb-xs">
+<h4 class="font-body-lg text-body-lg text-on-surface font-semibold text-opacity-80">Marketplace Tax Adjustment</h4>
+<span class="font-mono-data text-mono-data text-outline text-xs">1d ago</span>
+</div>
+<p class="text-on-surface-variant font-body-sm text-body-sm mb-sm line-clamp-2">The guild transaction tax has been reduced to 2.5% for all internal trades to stimulate localized economic activity.</p>
+<div class="flex items-center gap-sm">
+<span class="bg-surface-bright px-2 py-1 rounded DEFAULT font-label-caps text-[10px] text-on-surface-variant border border-outline-variant">ECONOMY</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Active Market Activity -->
+<div class="glass-panel rounded-xl flex flex-col overflow-hidden">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-h3 text-h3 text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary-fixed">monitoring</span>
+                            Market Feed
+                        </h3>
+</div>
+<div class="p-0 flex-1 overflow-y-auto max-h-[400px]">
+<ul class="divide-y divide-outline-variant/50">
+<li class="p-md hover:bg-surface-variant/30 transition-colors">
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-caps text-label-caps text-secondary-fixed-dim">NEW BID</span>
+<span class="font-mono-data text-mono-data text-outline text-xs">Just now</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface font-body-md text-body-md">Plasma Core T4</span>
+<span class="font-mono-data text-mono-data text-primary-fixed-dim">1,200 CR</span>
+</div>
+</li>
+<li class="p-md hover:bg-surface-variant/30 transition-colors">
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-caps text-label-caps text-outline">LISTED</span>
+<span class="font-mono-data text-mono-data text-outline text-xs">5m ago</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface font-body-md text-body-md">Aegis Shield BP</span>
+<span class="font-mono-data text-mono-data text-on-surface-variant">850 CR</span>
+</div>
+</li>
+<li class="p-md hover:bg-surface-variant/30 transition-colors">
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-caps text-label-caps text-primary-fixed">SOLD</span>
+<span class="font-mono-data text-mono-data text-outline text-xs">12m ago</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface font-body-md text-body-md strike-through text-opacity-50">Quantum Drive</span>
+<span class="font-mono-data text-mono-data text-outline">3,400 CR</span>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-zinc-950/90 backdrop-blur-lg docked full-width bottom-0 border-t border-zinc-800 shadow-2xl shadow-cyan-500/10 text-[10px] uppercase font-bold tracking-widest active:bg-zinc-800 tap-highlight-transparent">
+<a class="flex flex-col items-center justify-center text-cyan-400 bg-cyan-400/5 rounded-xl py-1 px-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="mt-1">Market</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="mt-1">Trades</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

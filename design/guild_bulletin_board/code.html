@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guild Announcement &amp; Bulletin Board</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-bright": "#2c3a4c",
+                "tertiary-fixed": "#e5e2e1",
+                "on-surface-variant": "#b9cacb",
+                "secondary-fixed": "#f8d8ff",
+                "surface-container-highest": "#273647",
+                "error": "#ffb4ab",
+                "inverse-surface": "#d4e4fa",
+                "error-container": "#93000a",
+                "on-tertiary": "#313030",
+                "on-error": "#690005",
+                "surface-tint": "#00dbe9",
+                "inverse-primary": "#006970",
+                "on-primary-container": "#006970",
+                "on-primary": "#00363a",
+                "background": "#051424",
+                "secondary": "#ecb2ff",
+                "primary-fixed": "#7df4ff",
+                "on-primary-fixed-variant": "#004f54",
+                "on-tertiary-container": "#605f5e",
+                "on-surface": "#d4e4fa",
+                "tertiary": "#f9f5f5",
+                "surface-container": "#122131",
+                "surface-variant": "#273647",
+                "primary-container": "#00f0ff",
+                "on-error-container": "#ffdad6",
+                "tertiary-container": "#dcd9d8",
+                "on-primary-fixed": "#002022",
+                "surface-container-high": "#1c2b3c",
+                "tertiary-fixed-dim": "#c8c6c5",
+                "on-secondary-fixed": "#320047",
+                "surface": "#051424",
+                "surface-container-low": "#0d1c2d",
+                "outline-variant": "#3b494b",
+                "on-secondary-fixed-variant": "#74009f",
+                "primary-fixed-dim": "#00dbe9",
+                "primary": "#dbfcff",
+                "secondary-fixed-dim": "#ecb2ff",
+                "on-tertiary-fixed": "#1c1b1b",
+                "inverse-on-surface": "#233143",
+                "on-secondary": "#520071",
+                "secondary-container": "#cf5cff",
+                "on-tertiary-fixed-variant": "#474646",
+                "on-background": "#d4e4fa",
+                "on-secondary-container": "#480063",
+                "surface-dim": "#051424",
+                "outline": "#849495",
+                "surface-container-lowest": "#010f1f"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "unit": "4px",
+                "margin": "24px",
+                "md": "16px",
+                "lg": "24px",
+                "2xl": "48px",
+                "sm": "8px",
+                "3xl": "64px",
+                "xl": "32px",
+                "xs": "4px",
+                "gutter": "20px"
+        },
+        "fontFamily": {
+                "h2": ["Inter"],
+                "h1": ["Inter"],
+                "body-sm": ["Inter"],
+                "mono-data": ["monospace"],
+                "body-lg": ["Inter"],
+                "h3": ["Inter"],
+                "body-md": ["Inter"],
+                "label-caps": ["Inter"]
+        },
+        "fontSize": {
+                "h2": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "h1": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                "mono-data": ["14px", {"lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500"}],
+                "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                "h3": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "700"}]
+        }
+      }
+    }
+  }
+</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined[data-weight="fill"] {
+      font-variation-settings: 'FILL' 1;
+    }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body-md text-body-md">
+<!-- SideNavBar -->
+<nav class="hidden md:flex bg-zinc-950/80 backdrop-blur-xl h-screen w-64 border-r border-zinc-800 flex-col h-full py-6 fixed z-40">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded-DEFAULT bg-surface-container border border-outline-variant flex items-center justify-center overflow-hidden">
+<img alt="Guild Realm Avatar" class="w-full h-full object-cover" data-alt="A highly detailed, 3D rendered avatar icon showing a stylized glowing blue crest on a dark metallic background. The design is sleek, futuristic, and represents a high-end gaming guild emblem. The lighting is dramatic, emphasizing the neon accents against the matte black surface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCo0Zh91E6C05xkTj18u4FC9TNp0BwrDt_WK5CmZ_OtP_8saBQ0EtgvZhs5RZKocxqXJs4I85fhh6zRztEARn7PP4RaD0ZYvVbyL9iJnP_RWpoItMrSEPuatPqZGfm8I5y3bei_JbBVAPwmJw9K0gECz7gRIaJn_W_vjTQZ3qslXEVkY4jZDYJXD0Ral3KrWF4F6KgOYVxU9RkAKzXeVBDSWzJ73ULpb3PGxIEUvp82BvLX5p1hOx2wuOAeK_SSgCFJTbkhWnj7CA"/>
+</div>
+<div>
+<h1 class="font-h2 text-h2 text-cyan-400 text-lg font-black tracking-tighter uppercase">ProGuild SaaS</h1>
+<p class="font-body-sm text-body-sm text-zinc-500">Elite Management</p>
+</div>
+</div>
+<div class="px-4 mb-6">
+<button class="w-full bg-primary-container text-on-primary font-label-caps text-label-caps py-2 rounded-DEFAULT flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 duration-100 shadow-[inset_0_0_8px_rgba(0,219,233,0.4)] border border-primary-fixed-dim">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                New Campaign
+            </button>
+</div>
+<ul class="flex-1 flex flex-col gap-1 px-4 font-inter text-sm tracking-tight">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-cyan-400 font-bold border-r-2 border-cyan-400 bg-cyan-400/5 hover:bg-zinc-900/50 transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="campaign" data-weight="fill">campaign</span>
+                    Announcements
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="settings_applications">settings_applications</span>
+                    Management
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                    Players
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+                    Analytics
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                    Settings
+                </a>
+</li>
+</ul>
+<div class="mt-auto px-4 font-inter text-sm tracking-tight border-t border-zinc-800 pt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-zinc-950/50 backdrop-blur-md sticky top-0 z-50 flex justify-between items-center w-full px-8 h-16 docked full-width border-b border-zinc-800">
+<div class="flex items-center gap-8">
+<span class="text-xl font-black text-white font-inter uppercase tracking-widest block md:hidden">ProGuild</span>
+<nav class="hidden md:flex gap-6 font-inter text-xs font-bold uppercase tracking-widest">
+<a class="text-cyan-400 border-b-2 border-cyan-400 pb-2 cursor-pointer active:opacity-80 hover:text-white transition-opacity" href="#">Overview</a>
+<a class="text-zinc-400 cursor-pointer active:opacity-80 hover:text-white transition-opacity py-2" href="#">Servers</a>
+<a class="text-zinc-400 cursor-pointer active:opacity-80 hover:text-white transition-opacity py-2" href="#">Logs</a>
+</nav>
+</div>
+<div class="flex items-center gap-4 text-cyan-400">
+<button class="cursor-pointer active:opacity-80 hover:text-white transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="cursor-pointer active:opacity-80 hover:text-white transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+</button>
+<div class="w-8 h-8 rounded-full border border-outline-variant overflow-hidden ml-2 cursor-pointer">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A portrait of a male gamer wearing a high-tech headset in a dimly lit room. The lighting is dominated by soft purple and cyan neon glows reflecting off his face and equipment. The aesthetic is modern, sleek, and highly professional, suitable for a dark-mode UI environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXXmcEZHsSoJYsDd54V7OPA1ewObrQxZ9fP34RtVp8-qMpKaxou3NwoZpq6On9vrPlexiwQGWafR9Ms-Lldk2r9VZNEPoilf4K6ITTyrKCs-5VWSdlgMi65UX3gv1phldiaW-etb9jwpp6qe35HIsRJ3uK6xmnrhWxIJu4Opul1XkjEGS8rf7pnW05faSR6wOJ7zn6fOl4R0gp2xJYkK0pxVPWOZYEJtYOUPM6E2-STgRHO5OW_iJ3XgkhLy_L3m8XtYSxzx3QiA"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-lg md:p-2xl flex flex-col">
+<div class="flex items-center justify-between mb-lg">
+<h2 class="font-h1 text-h1 text-on-surface">Bulletin Board</h2>
+<div class="flex gap-sm">
+<span class="bg-surface-container border border-outline-variant rounded-DEFAULT px-md py-sm font-label-caps text-label-caps text-primary flex items-center gap-2 cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_6px_#dbfcff]"></span>
+                        Events
+                    </span>
+<span class="bg-surface-container border border-outline-variant rounded-DEFAULT px-md py-sm font-label-caps text-label-caps text-secondary flex items-center gap-2 cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_6px_#ecb2ff]"></span>
+                        Recruitment
+                    </span>
+<span class="bg-surface-container border border-outline-variant rounded-DEFAULT px-md py-sm font-label-caps text-label-caps text-error flex items-center gap-2 cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="w-2 h-2 rounded-full bg-error shadow-[0_0_6px_#ffb4ab]"></span>
+                        Rules
+                    </span>
+</div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-lg flex-1">
+<!-- Detailed View (Left Span) -->
+<div class="xl:col-span-8 flex flex-col gap-lg">
+<article class="bg-surface-container border border-outline-variant rounded-xl p-lg md:p-xl flex flex-col gap-md shadow-lg shadow-black/50">
+<div class="flex justify-between items-start mb-md">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high border border-outline-variant overflow-hidden">
+<img alt="Author" class="w-full h-full object-cover" data-alt="A profile picture of an authoritative guild leader character. The image features a stylized, armored figure with neon teal visor accents against a deeply shadowed, metallic background. The overall tone is intense, professional, and visually aligned with a dark cybernetic or sci-fi gaming universe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsl-fWKJybyt3vK7h48TUzoTG89mTbEit7-oHuLEcuGun_w5_rGVNbfWQ7XcAJc5NEkoplN6KTv5W2QfSjLsSNvHPIpXVIWcWWiWxdw7utYVYEowsudn86m-sB_EsJFsski48uzbVC5w_cYh4NXOGDu2mZXWxpq1GMuLw94ZjapFiVlhmf9q9Qz1DamyQ7PmJRyKRk-SCq6aBP5qbGhvot1KxVjnuAQigCnCboSOAXbznKNamguluKqocHRAUZNF99dNqvJQ30FQ"/>
+</div>
+<div>
+<h3 class="font-h3 text-h3 text-on-surface leading-tight">Operation: Void Collapse</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-mono-data text-mono-data text-primary-fixed-dim">@CommanderVex</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">• 2 hours ago</span>
+<span class="bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded font-label-caps text-[10px] ml-2 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_4px_#dbfcff]"></span> EVENT
+                                        </span>
+</div>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant space-y-4">
+<p>Attention all active roster members. We have received confirmation that the Void Core instance will reset tomorrow at 18:00 ST. This is a mandatory progression push for all Vanguard-tier players.</p>
+<p>Phase 1 will focus on securing the outer perimeter defenses. Ensure your loadouts are optimized for high-burst AoE, as the mob density in sectors Alpha and Bravo has been increased in the latest patch.</p>
+<ul class="list-disc pl-5 space-y-1 text-on-surface">
+<li>Flasks and consumables are provided in Vault Tab 3.</li>
+<li>Voice comms are mandatory; be in the staging channel 15 minutes prior.</li>
+<li>Failure to meet the gearscore requirement will result in a substitution.</li>
+</ul>
+</div>
+<div class="grid grid-cols-2 gap-sm mt-sm">
+<div class="rounded-lg overflow-hidden border border-outline-variant h-48 bg-surface-container-high relative group cursor-pointer">
+<img alt="Map Data" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A highly detailed tactical map interface displayed on a dark sci-fi monitor. The map shows intricate grid lines, glowing cyan and magenta waypoints, and topographical data of a rugged alien landscape. The aesthetic is HUD-like, professional, and dense with simulated telemetry data." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDn0HT_Ci9NAYa85ZxQ5Ou0V45My0wcR7hJHOF8BnswOyDsDwiw9pl2GwffR3Dg_7SUeT6GO0QA8LRzZpCFXZZPz_HzBI7VO3f3xC-a8YUZdUHAAqwIHYbPCFzEUTBLvqvNbt8dRdqGoVo9aRdWfvFvW10YWSgidunugZMbaRHOzpQk_BPd6_Gv-Ho5HJNZlMZ5LQv86QTUXA6We2gVqnbdlsTen21oBWMt2rh0wJi2MaYoTyj9qCqOYnQ0R_U5S9yhmfp3FnNp4g"/>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-sm">
+<span class="font-mono-data text-mono-data text-on-surface text-xs">sector_map_v2.png</span>
+</div>
+</div>
+<div class="rounded-lg overflow-hidden border border-outline-variant h-48 bg-surface-container-high relative group cursor-pointer flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors" data-icon="description">description</span>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-sm">
+<span class="font-mono-data text-mono-data text-on-surface text-xs">loadout_reqs.pdf</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-outline-variant pt-md mt-md">
+<div class="flex gap-4">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-mono-data text-mono-data text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="forum">forum</span>
+                                    14 Comments
+                                </button>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-secondary transition-colors font-mono-data text-mono-data text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="share">share</span>
+                                    Share
+                                </button>
+</div>
+<button class="bg-primary-container text-on-primary-container font-label-caps text-label-caps px-md py-2 rounded-DEFAULT hover:opacity-90 active:scale-95 transition-all shadow-[inset_0_0_8px_rgba(0,240,255,0.3)] border border-primary border-b-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+                                Mark as Read
+                            </button>
+</div>
+</article>
+<!-- Comments Section -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-lg flex flex-col gap-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant">Recent Comms</h4>
+<div class="flex gap-sm items-start">
+<div class="w-8 h-8 rounded bg-surface border border-outline-variant flex-shrink-0 mt-1"></div>
+<div class="flex-1 bg-surface border border-outline-variant rounded-lg p-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<input class="w-full bg-transparent border-none text-on-surface font-body-sm text-body-sm focus:ring-0 placeholder:text-on-surface-variant/50" placeholder="Transmit message..." type="text"/>
+</div>
+</div>
+<div class="flex gap-sm items-start mt-sm">
+<div class="w-8 h-8 rounded bg-surface-container-highest border border-outline-variant flex-shrink-0 overflow-hidden">
+<img alt="Commenter" class="w-full h-full object-cover" data-alt="A small avatar showing a futuristic helmet with a glowing purple visor. The background is pitch black, highlighting the sleek, angular design of the sci-fi armor. The image looks like a character icon from a high-fidelity competitive video game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEz0RcX312b_cEvb7JBE1tFo74JYTrQRTo8_9cCrYATzrjkr0KGNZ2-J7Q75KT-K-raKNfnVtrPDTolMJzgcTDHSjYNE1FE9ON1x4u0FZ4ezNXd9-H7BuVJYQU0CTm_V6Of_6d3KNshFy5C2IVc2ESvyDjJRHPsgm4xYuwXgbh_1ma7-iwFl_WNO2E8ZgPCW7Tm0uO1msDBJSB7qh5A0_h7zP6d9Xg90QQ4qaqQgIc9IDdY867sCA8ZwLw-gmceNFbyLxxczlnSg"/>
+</div>
+<div class="flex-1">
+<div class="flex items-baseline gap-2">
+<span class="font-mono-data text-mono-data text-secondary-fixed-dim text-sm">@NovaSnipe</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-xs">45m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1">Loadout is prepped. Will be in staging channel at 17:40 ST.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Pinned & List (Right Span) -->
+<div class="xl:col-span-4 flex flex-col gap-lg">
+<!-- Pinned Notice -->
+<div class="bg-surface-container-high border border-error/50 rounded-xl p-md relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-16 h-16 bg-error/10 rounded-bl-full pointer-events-none"></div>
+<div class="flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-error text-lg" data-icon="push_pin" data-weight="fill">push_pin</span>
+<h4 class="font-label-caps text-label-caps text-error tracking-widest">Pinned Directive</h4>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mb-2">Code of Conduct Rev. 4</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">All members must review the updated loot distribution rules before the weekend raid schedule begins. Non-compliance results in DKP penalty.</p>
+<a class="inline-flex items-center gap-1 font-mono-data text-mono-data text-xs text-error mt-sm hover:underline" href="#">
+                            Acknowledge <span class="material-symbols-outlined text-xs" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<!-- List -->
+<div class="bg-surface-container border border-outline-variant rounded-xl flex-1 flex flex-col overflow-hidden">
+<div class="p-md border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant">Guild Feed</h4>
+<span class="material-symbols-outlined text-on-surface-variant text-sm cursor-pointer hover:text-on-surface" data-icon="filter_list">filter_list</span>
+</div>
+<div class="flex flex-col divide-y divide-outline-variant/50 overflow-y-auto">
+<!-- Active Item (matches main view) -->
+<div class="p-md bg-surface-container-highest border-l-2 border-primary cursor-pointer">
+<div class="flex items-center gap-2 mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_4px_#dbfcff]"></span>
+<span class="font-mono-data text-mono-data text-xs text-primary">EVENT</span>
+</div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface">Operation: Void Collapse</h4>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-xs mt-1 block">2 hours ago • 14 Comms</span>
+</div>
+<!-- List Item -->
+<div class="p-md hover:bg-surface-container-highest transition-colors cursor-pointer group">
+<div class="flex items-center gap-2 mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_4px_#ecb2ff]"></span>
+<span class="font-mono-data text-mono-data text-xs text-secondary group-hover:text-secondary-fixed">RECRUIT</span>
+</div>
+<h4 class="font-body-md text-body-md text-on-surface group-hover:text-white transition-colors">Seeking Healers for Core Team</h4>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-xs mt-1 block">Yesterday • 3 Comms</span>
+</div>
+<!-- List Item -->
+<div class="p-md hover:bg-surface-container-highest transition-colors cursor-pointer group opacity-70">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[10px] text-on-surface-variant" data-icon="done_all">done_all</span>
+<span class="font-mono-data text-mono-data text-xs text-on-surface-variant">SYS_MSG</span>
+</div>
+<h4 class="font-body-md text-body-md text-on-surface group-hover:text-white transition-colors">Server Maintenance Window</h4>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-xs mt-1 block">2 days ago • Read</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

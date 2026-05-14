@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GAM Marketplace Explorer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error-container": "#93000a",
+                      "primary-fixed-dim": "#00dbe9",
+                      "on-tertiary-fixed": "#1c1b1b",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-low": "#0d1c2d",
+                      "on-secondary-fixed": "#320047",
+                      "outline": "#849495",
+                      "primary-fixed": "#7df4ff",
+                      "surface-dim": "#051424",
+                      "on-primary": "#00363a",
+                      "on-background": "#d4e4fa",
+                      "tertiary-container": "#dcd9d8",
+                      "surface-container-high": "#1c2b3c",
+                      "background": "#051424",
+                      "surface-variant": "#273647",
+                      "tertiary": "#f9f5f5",
+                      "primary": "#dbfcff",
+                      "surface-container-highest": "#273647",
+                      "outline-variant": "#3b494b",
+                      "inverse-surface": "#d4e4fa",
+                      "inverse-primary": "#006970",
+                      "secondary": "#ecb2ff",
+                      "on-surface-variant": "#b9cacb",
+                      "on-secondary": "#520071",
+                      "secondary-fixed": "#f8d8ff",
+                      "on-surface": "#d4e4fa",
+                      "on-primary-container": "#006970",
+                      "secondary-container": "#cf5cff",
+                      "surface-container": "#122131",
+                      "on-tertiary-container": "#605f5e",
+                      "on-tertiary-fixed-variant": "#474646",
+                      "primary-container": "#00f0ff",
+                      "surface": "#051424",
+                      "tertiary-fixed-dim": "#c8c6c5",
+                      "on-primary-fixed": "#002022",
+                      "on-primary-fixed-variant": "#004f54",
+                      "secondary-fixed-dim": "#ecb2ff",
+                      "on-secondary-fixed-variant": "#74009f",
+                      "tertiary-fixed": "#e5e2e1",
+                      "error": "#ffb4ab",
+                      "on-secondary-container": "#480063",
+                      "surface-bright": "#2c3a4c",
+                      "surface-tint": "#00dbe9",
+                      "surface-container-lowest": "#010f1f",
+                      "inverse-on-surface": "#233143",
+                      "on-error": "#690005",
+                      "on-tertiary": "#313030"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin": "24px",
+                      "lg": "24px",
+                      "2xl": "48px",
+                      "gutter": "20px",
+                      "xl": "32px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "3xl": "64px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "mono-data": [
+                              "monospace"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "h1": [
+                              "Inter"
+                      ],
+                      "h2": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "h3": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "mono-data": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "h2": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h3": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.08em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          .scrollbar-hide::-webkit-scrollbar {
+              display: none;
+          }
+          .scrollbar-hide {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+          }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased pb-24 md:pb-0">
+<!-- Top Navigation Web (Hidden on Mobile) -->
+<nav class="hidden md:flex fixed top-0 w-full z-50 justify-between items-center px-6 h-16 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50 shadow-none font-inter tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black italic tracking-tighter text-cyan-400">GAM</span>
+<div class="flex gap-6">
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors hover:bg-zinc-900/50 px-2 py-1 rounded" href="#">Marketplace</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors hover:bg-zinc-900/50 px-2 py-1 rounded" href="#">Trades</a>
+<a class="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="#">Analytics</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary-fixed text-on-primary px-4 py-2 rounded font-label-caps uppercase transition-all duration-200 active:scale-95">Create Listing</button>
+<span class="material-symbols-outlined text-zinc-400 hover:text-zinc-100 cursor-pointer transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-zinc-400 hover:text-zinc-100 cursor-pointer transition-colors" data-icon="settings">settings</span>
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-zinc-800" data-alt="A small, stylized avatar image suitable for a gaming dashboard profile picture, featuring a high-contrast cybernetic aesthetic in dark grey and bright cyan, fitting a modern, low-latency gamer-professional visual identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC72-04Ehe0Wb_Q8Hu3hsjaCXt0g_r92ua-sBYIoLKN2I4RjYWGWBKOR6fLTpC_yM2w_0NoTeex1xicwflHesOc7Hx-GDrM-IlJ73C37VgWGI0UJJT5vjtUj9-AURJ30kvlp0FRFVcel3WOr-i3lCEQ4SxnlOcmoOjy9FnGB8uiZU1LvAqV1m9hm9RYS84EO1GPf_1S6kWVWC6enVAQAAGMVB7s3_rLHwNXA1fD_8iArUyZz8w64dbhSzpLgpMGfAA_K83Nh2av-g"/>
+</div>
+</nav>
+<!-- Side Navigation Web (Hidden on Mobile) -->
+<aside class="hidden lg:flex flex-col h-screen fixed left-0 top-0 overflow-y-auto w-64 border-r border-zinc-800 bg-zinc-950 shadow-none pt-16 z-40">
+<div class="p-6 border-b border-zinc-800 flex items-center gap-4">
+<img alt="Guild Logo" class="w-10 h-10 rounded border border-zinc-700" data-alt="A small, geometric logo icon representing a gaming guild, featuring sharp edges and a neon-infused color palette against a matte dark background, aligning with a sophisticated SaaS and gaming intersection style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyEsW7oBE9BpSc5bHnBY2NMtlxlzuIdVWr9YF0TKe31E7X1JsneF9Qhf6dcdSaBB7sJLmTJsixLomkO9ZtnSnE1deWHXfA0qUzKXEUthGnIBdergUOZ6jAgJv99FcNUETHwfjMv55eYze0NHYBsobSAl4BWWwn-NSOhjusZj-yOOKbOfFQKrCabcu-6dYitjlaYlx2yZBWJJalakONDYi-RqGk3dy1-6kvn8dQCLGOhoH3FF2-cgb-1DCBpPbTZDDObjVIsBpiNA"/>
+<div>
+<h2 class="font-h3 text-h3 font-black text-cyan-400">GAM Marketplace</h2>
+<p class="font-body-sm text-body-sm text-zinc-500">Pro League Guild</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-6 flex flex-col gap-2 font-inter text-sm font-medium">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded bg-cyan-500/10 text-cyan-400 border-r-2 border-cyan-400 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span> Marketplace
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span> Trades
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span> Members
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span> Admin
+            </a>
+</nav>
+<div class="p-4 border-t border-zinc-800">
+<button class="w-full bg-zinc-900 text-cyan-400 border border-zinc-700 px-4 py-2 rounded font-label-caps uppercase hover:bg-zinc-800 transition-colors">Switch Realm</button>
+<div class="mt-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span> Support
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span> Logout
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-64 md:pt-16 min-h-screen bg-background">
+<!-- Mobile Header (Visible only on small screens) -->
+<header class="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-surface-variant p-4">
+<div class="flex items-center justify-between mb-4">
+<span class="text-xl font-black italic tracking-tighter text-cyan-400">GAM</span>
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-sm text-on-surface-variant" data-icon="person">person</span>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant" data-icon="search">search</span>
+<input class="w-full bg-[#1E1E1E] text-on-surface border-0 border-b border-surface-variant focus:border-primary-fixed focus:ring-0 pl-10 pr-4 py-2 font-body-sm text-body-sm placeholder:text-outline-variant transition-colors" placeholder="Search items, guilds, players..." type="text"/>
+</div>
+</header>
+<div class="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+<!-- Filters & Categories (Horizontal Scroll on Mobile) -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h1 class="font-h3 text-h3 text-on-surface">Market Explorer</h1>
+<button class="flex items-center gap-2 text-primary-fixed text-label-caps font-label-caps uppercase bg-primary-fixed/10 px-3 py-1 rounded border border-primary-fixed/20">
+<span class="material-symbols-outlined text-[16px]" data-icon="tune">tune</span> Filters
+                    </button>
+</div>
+<!-- Game/Realm Filters -->
+<div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-primary-fixed text-on-primary font-mono-data text-mono-data font-semibold">All Realms</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-surface-container text-on-surface border border-surface-variant hover:bg-surface-variant font-mono-data text-mono-data transition-colors">Elysium Server</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-surface-container text-on-surface border border-surface-variant hover:bg-surface-variant font-mono-data text-mono-data transition-colors">Void Sector</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-surface-container text-on-surface border border-surface-variant hover:bg-surface-variant font-mono-data text-mono-data transition-colors">Neon District</button>
+</div>
+<!-- Category Pills -->
+<div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+<div class="flex items-center gap-1 bg-[#121212] border border-[#2A2A2A] rounded px-3 py-1 text-outline hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="category">category</span>
+<span class="font-label-caps text-label-caps uppercase">Materials</span>
+</div>
+<div class="flex items-center gap-1 bg-[#1E1E1E] border border-primary-fixed/50 rounded px-3 py-1 text-primary-fixed cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="diamond">diamond</span>
+<span class="font-label-caps text-label-caps uppercase">Consumables</span>
+</div>
+<div class="flex items-center gap-1 bg-[#121212] border border-[#2A2A2A] rounded px-3 py-1 text-outline hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="swords">swords</span>
+<span class="font-label-caps text-label-caps uppercase">Gear</span>
+</div>
+</div>
+</section>
+<!-- Listing Grid -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+<!-- Card 1 -->
+<div class="bg-[#121212] border border-[#2A2A2A] rounded-lg overflow-hidden hover:bg-[#1E1E1E] transition-colors group relative">
+<div class="absolute top-2 right-2 z-10 flex gap-1">
+<span class="w-2 h-2 rounded-full bg-error shadow-[0_0_4px_#ffb4ab]"></span>
+</div>
+<div class="h-40 bg-surface-variant/30 relative border-b border-[#2A2A2A]">
+<img alt="Magic Stone" class="w-full h-full object-cover mix-blend-screen opacity-80" data-alt="A highly detailed, glowing crystalline object resembling a magic stone from a video game, set against a stark, minimalist dark background. It radiates a faint electric blue and purple light, fitting the high-performance, neon-infused aesthetic of a professional gamer dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSUqT3Xhu46Oi-oSVpnZLqZuFYMkemqErMpiK1c-zHNaY2mvQrIZzclWwSIJgSjhVxbGc-Z0MOWpElzmtIK1O3Fpp76KXguftKQK4dE32nKfGLJNod_vIoHb8Qj_FPiXo8ggBHKP_OuRfzojpdlGK9tO2yGrtRrzgE444bDP02K8BZOOe3yaADvKkpA6KTVCTqSDQQ0AXj_mZcUFBeicYxXptlUCVpaWTpuu6-om7zlRGF5ra4Ovy0gh6uXY7cXBTDE9Y4PBk2Fw"/>
+</div>
+<div class="p-4 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-mono-data text-mono-data text-on-surface font-semibold group-hover:text-primary-fixed transition-colors">Magic Stone x100</h3>
+<p class="font-label-caps text-label-caps text-outline uppercase mt-1">Resource / T4</p>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded border border-surface-variant">
+<span class="material-symbols-outlined text-xs text-secondary-fixed" data-icon="shield">shield</span>
+<span class="font-label-caps text-[10px] uppercase text-secondary-fixed">Apex</span>
+</div>
+</div>
+<div class="pt-2 flex items-end justify-between border-t border-[#2A2A2A]/50">
+<div>
+<p class="font-label-caps text-label-caps text-outline uppercase">Current Bid</p>
+<p class="font-h3 text-[20px] text-on-surface font-black tracking-tight mt-1">45,000 <span class="text-primary-fixed text-sm font-normal">G</span></p>
+</div>
+<button class="w-8 h-8 rounded bg-primary-fixed/10 flex items-center justify-center border border-primary-fixed/20 hover:bg-primary-fixed/20 text-primary-fixed">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-[#121212] border border-[#2A2A2A] rounded-lg overflow-hidden hover:bg-[#1E1E1E] transition-colors group relative">
+<div class="absolute top-2 left-2 z-10">
+<span class="px-2 py-0.5 bg-primary-fixed text-[#0A0A0A] font-label-caps text-[10px] uppercase rounded">Buyout Only</span>
+</div>
+<div class="h-40 bg-surface-variant/30 relative border-b border-[#2A2A2A]">
+<img alt="Health Potion" class="w-full h-full object-cover mix-blend-screen opacity-80" data-alt="A futuristic, stylized vial containing a glowing crimson liquid, representing a health potion in a high-end gaming interface. The vial sits on a matte dark grey surface, illuminated by subtle underlighting that creates a premium, clinical SaaS vibe mixed with dark-mode gaming aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy48SUujOBbrNUPO6pD2UIgB7TLJqK4lM90Nr23kHU_WewLMmsuUavkABQqqm1-mpVaLFSFNJDZTN2ilKVNHxJ4gjgoK-TbUd7soQ21wGJNE-44F2q-KyzUFEY9FMl245QGUtWrdH4_Zw8KQxC0TvfkJS7cUCaeZHI_0GwbyLqShs7c0jmBS7wIUbvPppjKqija7sA3UPyGlEtQF60ckN0br30AKadwhxNELUBW_HACeXtgz5JzWkEDe4c6kLUDacL2LmvCPRj0A"/>
+</div>
+<div class="p-4 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-mono-data text-mono-data text-on-surface font-semibold group-hover:text-primary-fixed transition-colors">Greater Elixir x50</h3>
+<p class="font-label-caps text-label-caps text-outline uppercase mt-1">Consumable / T3</p>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded border border-surface-variant">
+<span class="material-symbols-outlined text-xs text-primary-fixed" data-icon="shield">shield</span>
+<span class="font-label-caps text-[10px] uppercase text-primary-fixed">Vanguard</span>
+</div>
+</div>
+<div class="pt-2 flex items-end justify-between border-t border-[#2A2A2A]/50">
+<div>
+<p class="font-label-caps text-label-caps text-outline uppercase">Price</p>
+<p class="font-h3 text-[20px] text-on-surface font-black tracking-tight mt-1">12,500 <span class="text-primary-fixed text-sm font-normal">G</span></p>
+</div>
+<button class="w-8 h-8 rounded bg-[#1E1E1E] flex items-center justify-center border border-[#2A2A2A] hover:bg-surface-variant text-outline">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-[#121212] border border-[#2A2A2A] rounded-lg overflow-hidden hover:bg-[#1E1E1E] transition-colors group relative">
+<div class="h-40 bg-surface-variant/30 relative border-b border-[#2A2A2A] flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-outline-variant" data-icon="category">category</span>
+</div>
+<div class="p-4 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-mono-data text-mono-data text-on-surface font-semibold group-hover:text-primary-fixed transition-colors">Iron Ore Batch</h3>
+<p class="font-label-caps text-label-caps text-outline uppercase mt-1">Material / T1</p>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded border border-surface-variant opacity-50">
+<span class="font-label-caps text-[10px] uppercase text-outline">No Guild</span>
+</div>
+</div>
+<div class="pt-2 flex items-end justify-between border-t border-[#2A2A2A]/50">
+<div>
+<p class="font-label-caps text-label-caps text-outline uppercase">Starting Bid</p>
+<p class="font-h3 text-[20px] text-on-surface font-black tracking-tight mt-1">500 <span class="text-primary-fixed text-sm font-normal">G</span></p>
+</div>
+<button class="w-8 h-8 rounded bg-[#1E1E1E] flex items-center justify-center border border-[#2A2A2A] hover:bg-surface-variant text-outline">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation Mobile -->
+<nav class="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-800 shadow-2xl shadow-cyan-500/10 tap-highlight-transparent">
+<a class="flex flex-col items-center justify-center text-zinc-500 active:bg-zinc-800 rounded p-1" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home" data-weight="fill">home</span>
+<span class="text-[10px] uppercase font-bold tracking-widest">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-cyan-400 bg-cyan-400/5 rounded-xl py-1 px-3 active:bg-zinc-800" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="search" data-weight="fill" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="text-[10px] uppercase font-bold tracking-widest text-cyan-400">Market</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 active:bg-zinc-800 rounded p-1" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="text-[10px] uppercase font-bold tracking-widest">Trades</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 active:bg-zinc-800 rounded p-1" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="text-[10px] uppercase font-bold tracking-widest">Profile</span>
+</a>
+</nav>
+</body></html>

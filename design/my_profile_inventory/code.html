@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GAM - Member Profile &amp; Inventory</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#00dbe9",
+                        "inverse-primary": "#006970",
+                        "on-primary-container": "#006970",
+                        "on-primary": "#00363a",
+                        "background": "#051424",
+                        "secondary": "#ecb2ff",
+                        "primary-fixed": "#7df4ff",
+                        "on-primary-fixed-variant": "#004f54",
+                        "on-tertiary-container": "#605f5e",
+                        "on-surface": "#d4e4fa",
+                        "tertiary": "#f9f5f5",
+                        "surface-container": "#122131",
+                        "surface-variant": "#273647",
+                        "primary-container": "#00f0ff",
+                        "on-error-container": "#ffdad6",
+                        "surface-bright": "#2c3a4c",
+                        "tertiary-fixed": "#e5e2e1",
+                        "on-surface-variant": "#b9cacb",
+                        "secondary-fixed": "#f8d8ff",
+                        "surface-container-highest": "#273647",
+                        "error": "#ffb4ab",
+                        "inverse-surface": "#d4e4fa",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#313030",
+                        "on-error": "#690005",
+                        "primary": "#dbfcff",
+                        "secondary-fixed-dim": "#ecb2ff",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "inverse-on-surface": "#233143",
+                        "on-secondary": "#520071",
+                        "secondary-container": "#cf5cff",
+                        "on-tertiary-fixed-variant": "#474646",
+                        "on-background": "#d4e4fa",
+                        "on-secondary-container": "#480063",
+                        "surface-dim": "#051424",
+                        "outline": "#849495",
+                        "surface-container-lowest": "#010f1f",
+                        "tertiary-container": "#dcd9d8",
+                        "on-primary-fixed": "#002022",
+                        "surface-container-high": "#1c2b3c",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-secondary-fixed": "#320047",
+                        "surface": "#051424",
+                        "surface-container-low": "#0d1c2d",
+                        "outline-variant": "#3b494b",
+                        "on-secondary-fixed-variant": "#74009f",
+                        "primary-fixed-dim": "#00dbe9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "3xl": "64px",
+                        "gutter": "20px",
+                        "unit": "4px",
+                        "margin": "24px",
+                        "2xl": "48px",
+                        "lg": "24px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "mono-data": ["monospace"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-data": ["14px", { "lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h2": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "700" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #051424; color: #d4e4fa; }
+        .glass-panel { background: rgba(18, 33, 49, 0.7); backdrop-filter: blur(20px); border: 1px solid #273647; }
+        .neon-glow { text-shadow: 0 0 10px rgba(0, 219, 233, 0.5); }
+        .border-glow { box-shadow: inset 0 0 10px rgba(0, 219, 233, 0.2); border: 1px solid rgba(0, 219, 233, 0.5); }
+        /* Hide scrollbar for tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased pb-24">
+<!-- Top Navigation (Web) - Hidden on Mobile as per constraints -->
+<nav class="hidden md:flex fixed top-0 w-full z-50 justify-between items-center px-6 h-16 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50 transition-all duration-200 active:scale-95 shadow-none">
+<div class="flex items-center gap-6">
+<span class="text-2xl font-black italic tracking-tighter text-cyan-400 font-inter tracking-tight">GAM</span>
+<div class="flex items-center gap-4 border-l border-zinc-800/50 pl-4">
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors font-inter tracking-tight" href="#">Marketplace</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors font-inter tracking-tight" href="#">Trades</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors font-inter tracking-tight" href="#">Analytics</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-cyan-400 font-inter tracking-tight hover:bg-zinc-900/50 px-4 py-2 rounded-lg">Create Listing</button>
+<div class="flex gap-2">
+<button class="text-zinc-400 hover:bg-zinc-900/50 p-2 rounded-full"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="text-zinc-400 hover:bg-zinc-900/50 p-2 rounded-full"><span class="material-symbols-outlined" data-icon="settings">settings</span></button>
+</div>
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-surface-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgWcqaMyTREbOCRYRJgUJ3QB3dkRF4Pm4VL24cpnyDtu3W-jmN5tDd-h0J9Wh9lKmw0vG1ZQeI0w73DYnAArKEWFs3U5WgYSbcsgkTkVsGwr8blwQ9Xyo0RsSF1YQZDf7vAha5S4Hm88tmljeQvpOwV3ELQCG-0jMbLadFKgHU4wRNt3oHEhQy-ywraYoO3QGKnxICtqdhIg4G9-RB9rKY3hO7qXWd0qLZpOlWVYK1vJuHlq1LK-sK4LFdbAptZBIceKSkQ0a-hQ"/>
+</div>
+</nav>
+<!-- Side Navigation (Web) - Hidden on Mobile -->
+<aside class="hidden lg:flex flex-col h-screen fixed left-0 top-0 overflow-y-auto bg-zinc-950 border-r border-zinc-800 w-64 transition-transform duration-150 z-40 pt-16">
+<div class="p-6 border-b border-zinc-800 flex items-center gap-4">
+<img alt="Guild Logo" class="w-10 h-10 rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqQS-RX1TvdYWTlrIM28OJYhe4fDzAGF-7J-B2FWd3vLljgPFLV23EBWw3SEQ5InaOyvjQFBlc4nPSbh8gyV5UXxBdpFiJItGLT6X_UKKx1rZ6tjR57WUeWoCSGZGQfxqZBRcFpiAIMLBBKmlFiZ_UxG1JNRB6LfXb4nOIiUm2S32E38BO-WmuR8zV8Oti53SGfZCbwlCPef_SQLfmTr_8et1l5xYcCBBjxpD77S_WLzf6eQINMrARoGQToSptTsltD9QiD6OU8w"/>
+<div>
+<h1 class="font-black text-cyan-400 text-sm">GAM Marketplace</h1>
+<p class="text-zinc-500 text-xs">Pro League Guild</p>
+</div>
+</div>
+<div class="p-4 flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 font-inter text-sm font-medium transition-colors" href="#"><span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> Dashboard</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 font-inter text-sm font-medium transition-colors" href="#"><span class="material-symbols-outlined" data-icon="storefront">storefront</span> Marketplace</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 font-inter text-sm font-medium transition-colors" href="#"><span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span> Trades</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 font-inter text-sm font-medium transition-colors" href="#"><span class="material-symbols-outlined" data-icon="group">group</span> Members</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 font-inter text-sm font-medium transition-colors" href="#"><span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span> Admin</a>
+</div>
+<div class="p-4 border-t border-zinc-800">
+<button class="w-full py-2 mb-4 bg-zinc-900 text-cyan-400 rounded-lg font-inter text-sm font-medium hover:bg-zinc-800 transition-colors">Switch Realm</button>
+<a class="flex items-center gap-3 px-4 py-2 text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 font-inter text-sm font-medium transition-colors" href="#"><span class="material-symbols-outlined" data-icon="help">help</span> Support</a>
+<a class="flex items-center gap-3 px-4 py-2 text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 font-inter text-sm font-medium transition-colors" href="#"><span class="material-symbols-outlined" data-icon="logout">logout</span> Logout</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="lg:ml-64 md:pt-16 min-h-screen p-md lg:p-lg flex flex-col gap-lg max-w-7xl mx-auto">
+<!-- Mobile Header (Profile is active on this page, but we don't use top nav on mobile. We'll build a custom mobile header) -->
+<header class="flex md:hidden justify-between items-center py-4">
+<h1 class="font-h3 text-h3 text-on-surface">Member Profile</h1>
+<button class="p-2 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<!-- Profile Hero Section -->
+<section class="glass-panel rounded-xl p-lg flex flex-col items-center text-center relative overflow-hidden">
+<!-- Decorative background blur -->
+<div class="absolute -top-20 -right-20 w-64 h-64 bg-surface-tint rounded-full opacity-10 blur-3xl"></div>
+<div class="relative w-24 h-24 mb-4">
+<img alt="User Profile Avatar" class="w-full h-full object-cover rounded-full border-2 border-surface-tint shadow-[0_0_15px_rgba(0,219,233,0.3)]" data-alt="A striking portrait of a gamer avatar, styled as a high-tech cyberpunk character with subtle neon cyan reflections on their visor. The lighting is low-key, professional studio quality with edge lights highlighting the matte black tactical gear. The overall aesthetic perfectly matches a dark-mode gamer-professional SaaS platform. The mood is serious, competent, and elite." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrVmDP3GIKXtLK6wH8an9sGAf2MUzrapJ9cSH0t_OoGEcEzk7fvtwvYc_myui-qZizvCLEbBGAfqcjRkXlyxly9xtdtALfYxEKIr6fHDt7kKxAsOtMCopKJIMqw99HY2bpDyl1vwOXyUOc3XyWvEQCHqUwyOv9YC3lSYG41Ca0XADhkrttXvBc-uwmz6pGvTv1nIiQWw8IidpA2Y6P3Btv1cXZbsdWYFPPSnsj5mYTucPRKDPWnYHbtEIb6wwBkQ4oEwt3PKNx_Q"/>
+<div class="absolute -bottom-2 -right-2 bg-surface-container border border-surface-tint text-surface-tint font-label-caps text-label-caps px-2 py-1 rounded-DEFAULT shadow-lg flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-tint shadow-[0_0_5px_#00dbe9]"></span>
+                    LVL 42
+                </div>
+</div>
+<h2 class="font-h2 text-h2 text-on-surface mb-1">Kaelthas_Prime</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+                Pro League Guild • Vanguard Rank
+            </p>
+<div class="grid grid-cols-2 gap-4 w-full max-w-md">
+<div class="bg-surface-container-highest rounded-lg p-4 border border-outline-variant flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase tracking-widest">Total Earnings</span>
+<span class="font-mono-data text-h3 text-surface-tint neon-glow flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">diamond</span> 14,250
+                    </span>
+</div>
+<div class="bg-surface-container-highest rounded-lg p-4 border border-outline-variant flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase tracking-widest">Success Rate</span>
+<span class="font-mono-data text-h3 text-on-surface flex items-center gap-1">
+                        98.5%
+                    </span>
+</div>
+</div>
+</section>
+<!-- Tabs -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-surface-container-highest">
+<button class="px-4 py-2 rounded-lg bg-surface-container border border-surface-tint text-surface-tint font-label-caps text-label-caps flex items-center gap-2 shrink-0">
+<span class="material-symbols-outlined text-[18px]">inventory_2</span>
+                INVENTORY
+            </button>
+<button class="px-4 py-2 rounded-lg text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-low transition-colors flex items-center gap-2 shrink-0">
+<span class="material-symbols-outlined text-[18px]">list_alt</span>
+                MY LISTINGS
+            </button>
+<button class="px-4 py-2 rounded-lg text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-low transition-colors flex items-center gap-2 shrink-0">
+<span class="material-symbols-outlined text-[18px]">history</span>
+                HISTORY
+            </button>
+</div>
+<!-- Inventory Grid Section (Active Tab) -->
+<section class="flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<h3 class="font-h3 text-h3 text-on-surface">Equipment</h3>
+<button class="text-surface-tint text-body-sm font-body-sm flex items-center gap-1">
+                    Filter <span class="material-symbols-outlined text-[16px]">filter_list</span>
+</button>
+</div>
+<!-- Bento Grid for Inventory -->
+<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+<!-- Legendary Item -->
+<div class="bg-surface-container rounded-lg p-2 border border-secondary shadow-[inset_0_0_8px_rgba(236,178,255,0.15)] flex flex-col items-center justify-center aspect-square relative group hover:bg-surface-container-high transition-colors">
+<div class="absolute top-1 right-1 w-2 h-2 rounded-full bg-secondary shadow-[0_0_5px_#ecb2ff]"></div>
+<span class="material-symbols-outlined text-4xl text-secondary mb-2" style="font-variation-settings: 'FILL' 1;">swords</span>
+<span class="font-label-caps text-[10px] text-on-surface truncate w-full text-center">Void Blade</span>
+</div>
+<!-- Epic Item -->
+<div class="bg-surface-container rounded-lg p-2 border border-surface-tint shadow-[inset_0_0_8px_rgba(0,219,233,0.1)] flex flex-col items-center justify-center aspect-square relative hover:bg-surface-container-high transition-colors">
+<div class="absolute top-1 right-1 w-2 h-2 rounded-full bg-surface-tint shadow-[0_0_5px_#00dbe9]"></div>
+<span class="material-symbols-outlined text-4xl text-surface-tint mb-2" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="font-label-caps text-[10px] text-on-surface truncate w-full text-center">Aegis Core</span>
+</div>
+<!-- Rare Item -->
+<div class="bg-surface-container rounded-lg p-2 border border-[#4ade80] flex flex-col items-center justify-center aspect-square hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-4xl text-[#4ade80] mb-2" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-caps text-[10px] text-on-surface truncate w-full text-center">Soul Flame</span>
+</div>
+<!-- Common Item -->
+<div class="bg-surface-container rounded-lg p-2 border border-outline-variant flex flex-col items-center justify-center aspect-square opacity-70 hover:opacity-100 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2">liquor</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant truncate w-full text-center">Health Vial</span>
+</div>
+<!-- Empty Slots -->
+<div class="bg-surface-container-lowest rounded-lg p-2 border border-dashed border-outline-variant flex flex-col items-center justify-center aspect-square opacity-50"></div>
+<div class="bg-surface-container-lowest rounded-lg p-2 border border-dashed border-outline-variant flex flex-col items-center justify-center aspect-square opacity-50 hidden sm:flex"></div>
+</div>
+</section>
+<!-- Recent Listings Summary Card (To show both requirements in one view structurally) -->
+<section class="flex flex-col gap-md mt-4">
+<h3 class="font-h3 text-h3 text-on-surface">Recent Activity</h3>
+<div class="glass-panel rounded-lg flex flex-col divide-y divide-surface-variant">
+<!-- Active Listing -->
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container-highest border border-surface-tint flex items-center justify-center">
+<span class="material-symbols-outlined text-surface-tint">hardware</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Plasma Emitter</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant">LISTED 2H AGO</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="font-mono-data text-body-sm text-on-surface">450 DIA</span>
+<div class="flex items-center gap-1 text-[10px] font-label-caps text-surface-tint">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-tint shadow-[0_0_3px_#00dbe9]"></span>
+                            ACTIVE
+                        </div>
+</div>
+</div>
+<!-- Pending Listing -->
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container-highest border border-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">diamond</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Void Crystal</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant">OFFER RECEIVED</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="font-mono-data text-body-sm text-on-surface">1,200 DIA</span>
+<div class="flex items-center gap-1 text-[10px] font-label-caps text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_3px_#ecb2ff]"></span>
+                            PENDING
+                        </div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Mobile) - Profile is Active -->
+<nav class="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-800 shadow-2xl shadow-cyan-500/10 tap-highlight-transparent">
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="text-[10px] uppercase font-bold tracking-widest font-inter">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">search</span>
+<span class="text-[10px] uppercase font-bold tracking-widest font-inter">Market</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">account_balance_wallet</span>
+<span class="text-[10px] uppercase font-bold tracking-widest font-inter">Trades</span>
+</a>
+<!-- Active Tab: Profile -->
+<a class="flex flex-col items-center justify-center text-cyan-400 bg-cyan-400/5 rounded-xl py-1 px-3" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-[10px] uppercase font-bold tracking-widest font-inter">Profile</span>
+</a>
+</nav>
+</body></html>

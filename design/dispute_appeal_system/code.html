@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GAM Platform - Disputes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#605f5e",
+                        "surface-container": "#122131",
+                        "surface": "#051424",
+                        "tertiary-container": "#dcd9d8",
+                        "on-background": "#d4e4fa",
+                        "on-secondary": "#520071",
+                        "surface-container-low": "#0d1c2d",
+                        "on-primary-fixed-variant": "#004f54",
+                        "surface-variant": "#273647",
+                        "primary-container": "#00f0ff",
+                        "on-primary": "#00363a",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#ecb2ff",
+                        "surface-dim": "#051424",
+                        "outline": "#849495",
+                        "surface-container-lowest": "#010f1f",
+                        "primary-fixed-dim": "#00dbe9",
+                        "secondary-fixed": "#f8d8ff",
+                        "background": "#051424",
+                        "on-primary-fixed": "#002022",
+                        "on-tertiary": "#313030",
+                        "inverse-on-surface": "#233143",
+                        "error": "#ffb4ab",
+                        "secondary": "#ecb2ff",
+                        "surface-container-high": "#1c2b3c",
+                        "secondary-container": "#cf5cff",
+                        "on-primary-container": "#006970",
+                        "on-secondary-container": "#480063",
+                        "on-tertiary-fixed-variant": "#474646",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "tertiary-fixed": "#e5e2e1",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "primary-fixed": "#7df4ff",
+                        "on-surface-variant": "#b9cacb",
+                        "on-error": "#690005",
+                        "inverse-surface": "#d4e4fa",
+                        "surface-bright": "#2c3a4c",
+                        "on-secondary-fixed-variant": "#74009f",
+                        "surface-container-highest": "#273647",
+                        "inverse-primary": "#006970",
+                        "outline-variant": "#3b494b",
+                        "on-surface": "#d4e4fa",
+                        "on-secondary-fixed": "#320047",
+                        "error-container": "#93000a",
+                        "primary": "#dbfcff",
+                        "tertiary": "#f9f5f5",
+                        "surface-tint": "#00dbe9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "unit": "4px",
+                        "md": "16px",
+                        "2xl": "48px",
+                        "margin": "24px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "3xl": "64px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "mono-data": ["monospace"],
+                        "label-caps": ["Inter"],
+                        "h3": ["Inter"],
+                        "h2": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "mono-data": ["14px", { "lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "700" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "h2": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col md:flex-row overflow-hidden font-body-md text-body-md">
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden lg:flex flex-col h-screen sticky top-0 bg-zinc-950/90 backdrop-blur-xl border-r border-zinc-800 shadow-2xl shadow-black/50 w-64 z-50">
+<div class="p-lg border-b border-zinc-800 flex items-center gap-md">
+<img alt="Header Avatar" class="w-8 h-8 rounded bg-surface-container object-cover border border-zinc-800" data-alt="A stylized, neon-lit emblem of a futuristic gaming guild. The emblem features sharp, metallic geometry glowing with intense cyan and magenta accents. The background is a deep, dark void, emphasizing the high-tech, cyberpunk aesthetic of the guild realm icon." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBM1bvQmUHhTRImVQHHzOHuTBw4hg-k-BeDHhZFLa3Tdkp0u7aKGIu0Eb6kQKSObgCRF7UYQ-9-07v9hqx31kb4Sypse-TbDbtBUDYMTiCqnhDPad9OEQB5rZ0QejNtH68ZAVutvnLlNwgk1paWQgOJ4hcbVUCiDOzNARadVvHb4pPhWk8ad9hV8lrvZjQ5PBQOspuSqKGjMzmXoQVgDFI0WSngmqkKGFvacbIYtiB3SGh4VGG7pSfpK4I8PtYvczrrs9PHpgstjQ"/>
+<div class="flex flex-col">
+<span class="text-lg font-black text-white font-h3 text-h3 leading-none">Neon Syndicate</span>
+<span class="text-xs text-zinc-500 font-label-caps text-label-caps">Global Realm</span>
+</div>
+</div>
+<div class="p-lg border-b border-zinc-800">
+<button class="w-full bg-primary-container text-on-primary-container font-label-caps text-label-caps py-2 rounded uppercase tracking-widest hover:bg-cyan-300 transition-colors">
+                New Trade
+            </button>
+</div>
+<ul class="flex-1 overflow-y-auto py-md flex flex-col gap-xs">
+<li>
+<a class="flex items-center gap-md px-lg py-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-label-caps text-label-caps uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-lg py-sm text-cyan-400 bg-cyan-400/10 border-r-2 border-cyan-400 font-label-caps text-label-caps uppercase tracking-widest active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">gavel</span>
+                    Disputes
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-lg py-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-label-caps text-label-caps uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                    Inventory
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-lg py-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-label-caps text-label-caps uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined">insights</span>
+                    Analytics
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-lg py-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-label-caps text-label-caps uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined">groups</span>
+                    Guilds
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-lg py-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-label-caps text-label-caps uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined">assessment</span>
+                    Reports
+                </a>
+</li>
+</ul>
+<div class="p-md border-t border-zinc-800">
+<ul class="flex flex-col gap-xs">
+<li>
+<a class="flex items-center gap-md px-md py-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-label-caps text-label-caps uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined">headset_mic</span>
+                        Support
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all font-label-caps text-label-caps uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+                        Account
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar (Mobile / Top Level) -->
+<header class="lg:hidden flex justify-between items-center h-16 px-6 w-full docked full-width top-0 z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800 shadow-none text-cyan-400 font-inter text-sm">
+<div class="text-xl font-black tracking-tighter text-cyan-400 uppercase">GAM SaaS</div>
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined cursor-pointer hover:text-cyan-300 transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-cyan-300 transition-colors">help</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-cyan-300 transition-colors">settings</span>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-cyan-400/50 cursor-pointer object-cover" data-alt="A close-up portrait of a professional gamer/admin wearing a headset. The lighting is dramatic, with subtle blue and purple neon rim lights defining their features against a dark background. The mood is serious and focused." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbj0-Q1UrwVabWzalW5rMsR2ZfM8c5GZ2RzqJDdvE_DKf7fZJgy3g9Llf9ul2qX6kCY3kwbeurU6pAMDnBS6VMY1Yj70oN_iAgAT5CtpiY2_NKaRgK9-yTf0FgGCV5PRgMGE3EpLNHgjdkt1D3EprObk-OnQRdptSULKrebWQYFTkPlOVjQWb1jMQtOZ-sHyAqlmmPEQ8ntm6SI2w4I8jR73m95oahoRPx04GyqCoSA0JPNvj9P5y7r_G12_FWgvJwjG8FuMqOFw"/>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- Header -->
+<div class="px-xl py-lg border-b border-zinc-800 bg-surface flex justify-between items-end flex-shrink-0">
+<div>
+<h1 class="font-h1 text-h1 text-white mb-xs">Disputes &amp; Appeals</h1>
+<p class="text-on-surface-variant font-body-sm text-body-sm">Manage active escalations, review evidence, and resolve trade conflicts.</p>
+</div>
+<div class="flex gap-md">
+<button class="bg-surface-container border border-outline-variant text-on-surface px-md py-sm rounded font-label-caps text-label-caps hover:bg-surface-container-high transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                    Filter
+                </button>
+</div>
+</div>
+<!-- Two Column Layout -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Column: Case List -->
+<div class="w-full lg:w-1/2 xl:w-2/5 border-r border-zinc-800 bg-surface flex flex-col overflow-y-auto">
+<div class="p-md sticky top-0 bg-surface/90 backdrop-blur z-10 border-b border-zinc-800">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+<input class="w-full bg-surface-container border-b border-outline-variant text-on-surface py-sm pl-xl pr-sm focus:outline-none focus:border-primary-container focus:bg-surface-container-high transition-all font-body-sm text-body-sm" placeholder="Search case ID, user, or trade..." type="text"/>
+</div>
+</div>
+<!-- Case Cards -->
+<div class="p-md flex flex-col gap-md">
+<!-- Active Case Card (Selected) -->
+<div class="bg-surface-container border border-primary-container p-md rounded cursor-pointer relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container"></div>
+<div class="flex justify-between items-start mb-sm">
+<span class="font-mono-data text-mono-data text-primary-container">#DSP-9021</span>
+<div class="flex items-center gap-xs bg-error/10 text-error px-2 py-1 rounded border border-error/20">
+<div class="w-2 h-2 rounded-full bg-error shadow-[0_0_4px_#ffb4ab]"></div>
+<span class="font-label-caps text-[10px] tracking-wider uppercase">Open</span>
+</div>
+</div>
+<h3 class="font-h3 text-body-lg text-white mb-xs truncate">Missing High-Tier Loot (Void Sword)</h3>
+<div class="flex items-center gap-md mb-md text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span>xX_Slayer_Xx</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-zinc-600">arrow_forward</span>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span>LootGoblin99</span>
+</div>
+</div>
+<p class="text-on-surface-variant font-body-sm text-body-sm line-clamp-2 mb-md">Buyer claims the 'Void Sword' was not delivered after the escrow was released. Seller insists trade was completed in sector 7.</p>
+<div class="flex justify-between items-center text-xs text-zinc-500 font-mono-data">
+<span>TRD-77382</span>
+<span>2 hrs ago</span>
+</div>
+</div>
+<!-- Under Review Case -->
+<div class="bg-surface-container border border-outline-variant p-md rounded cursor-pointer hover:bg-surface-container-high transition-colors">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-mono-data text-mono-data text-on-surface-variant">#DSP-9018</span>
+<div class="flex items-center gap-xs bg-secondary-container/10 text-secondary px-2 py-1 rounded border border-secondary/20">
+<div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_4px_#ecb2ff]"></div>
+<span class="font-label-caps text-[10px] tracking-wider uppercase">Under Review</span>
+</div>
+</div>
+<h3 class="font-h3 text-body-lg text-on-surface mb-xs truncate">Unauthorized Currency Transfer</h3>
+<div class="flex items-center gap-md mb-md text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span>GuildBank_Admin</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-zinc-600">arrow_forward</span>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span>Unknown_0x9A</span>
+</div>
+</div>
+<div class="flex justify-between items-center text-xs text-zinc-500 font-mono-data">
+<span>TRD-77110</span>
+<span>5 hrs ago</span>
+</div>
+</div>
+<!-- Frozen Case -->
+<div class="bg-surface-container border border-outline-variant p-md rounded cursor-pointer hover:bg-surface-container-high transition-colors">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-mono-data text-mono-data text-on-surface-variant">#DSP-8992</span>
+<div class="flex items-center gap-xs bg-surface-variant text-on-surface px-2 py-1 rounded border border-outline-variant">
+<span class="material-symbols-outlined text-[12px]">ac_unit</span>
+<span class="font-label-caps text-[10px] tracking-wider uppercase">Frozen</span>
+</div>
+</div>
+<h3 class="font-h3 text-body-lg text-on-surface mb-xs truncate">Suspected Botting Network Trade</h3>
+<div class="flex items-center gap-md mb-md text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span>System</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-zinc-600">arrow_forward</span>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span>FarmAcct_44</span>
+</div>
+</div>
+<div class="flex justify-between items-center text-xs text-zinc-500 font-mono-data">
+<span>TRD-76890</span>
+<span>1 day ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Detail Panel -->
+<div class="hidden lg:flex flex-1 flex-col bg-surface-dim overflow-y-auto">
+<!-- Detail Header -->
+<div class="p-xl border-b border-zinc-800 bg-surface-container flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<span class="font-mono-data text-mono-data text-primary-container text-lg">#DSP-9021</span>
+<div class="flex items-center gap-xs bg-error/10 text-error px-2 py-1 rounded border border-error/20">
+<div class="w-2 h-2 rounded-full bg-error shadow-[0_0_4px_#ffb4ab]"></div>
+<span class="font-label-caps text-[10px] tracking-wider uppercase">Open</span>
+</div>
+</div>
+<h2 class="font-h2 text-h2 text-white">Missing High-Tier Loot (Void Sword)</h2>
+</div>
+<div class="flex gap-sm">
+<button class="bg-primary-container text-on-primary-container px-md py-sm rounded font-label-caps text-label-caps uppercase tracking-widest hover:bg-cyan-300 transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+                                Resolve
+                            </button>
+<button class="border border-primary-container text-primary-container px-md py-sm rounded font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary-container/10 transition-colors">
+                                Escalate
+                            </button>
+<button class="bg-surface-variant text-on-surface px-md py-sm rounded border border-outline-variant hover:bg-surface-bright transition-colors font-label-caps text-label-caps uppercase tracking-widest flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">ac_unit</span>
+                                Freeze Funds
+                            </button>
+</div>
+</div>
+</div>
+<!-- Detail Content -->
+<div class="p-xl flex-1 flex flex-col xl:flex-row gap-xl">
+<!-- Main Timeline & Evidence -->
+<div class="flex-1 flex flex-col gap-lg">
+<!-- Issue Summary -->
+<div class="bg-surface-container border border-outline-variant rounded p-lg">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-sm">Issue Summary</h3>
+<p class="font-body-md text-body-md text-on-surface">The plaintiff (xX_Slayer_Xx) asserts that after transferring 50,000 Gold to the escrow, the defendant (LootGoblin99) failed to trade the agreed-upon item 'Void Sword'. The defendant claims the trade was completed in a high-lag zone (Sector 7) and the item was dropped.</p>
+</div>
+<!-- Evidence Section -->
+<div class="bg-surface-container border border-outline-variant rounded p-lg">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-md">Uploaded Evidence</h3>
+<div class="grid grid-cols-2 gap-md">
+<div class="border border-zinc-800 rounded bg-surface p-sm">
+<img alt="Gameplay Screenshot" class="w-full h-32 object-cover rounded mb-sm opacity-80 hover:opacity-100 transition-opacity cursor-pointer" data-alt="A dark, moody screenshot of a cyberpunk-style video game environment. The scene features glowing neon signs, rainy streets, and a heads-up display (HUD) showing a chat log. The color palette is dominated by deep blues, stark blacks, and bright magenta accents. The overall vibe is intense and technological." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlr6St8cNROi7Zv1brehaLhnMoNpBLQxy6zU_3wnqX42baeyWNkHAgvqz1OqpF4ISjhlVRwl8-qgSEhKr5RhLhISf5oyATcDbnvlPjHJdH7SQKH5LEarAoRITid303_frqyaqfNjYZ88q1fdSm8EqwTk_GucoI4bAV2dsCwDARh-WOd7ZU_X3jlE6XXwiC0F1wbXo4GdMlkZ1VFL5b88E1JNksaWAih2D_M7R3onwsIuqjgMPkFsnwybZIRxieZjFF8-URLCWYuQ"/>
+<div class="flex justify-between items-center text-xs font-mono-data text-on-surface-variant">
+<span>chat_log_01.png</span>
+<span class="material-symbols-outlined text-[16px]">download</span>
+</div>
+</div>
+<div class="border border-zinc-800 rounded bg-surface p-sm">
+<div class="w-full h-32 bg-surface-container-low flex items-center justify-center rounded mb-sm border border-dashed border-outline-variant">
+<div class="text-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant mb-xs">description</span>
+<div class="font-mono-data text-xs text-on-surface-variant">server_log_x7.txt</div>
+</div>
+</div>
+<div class="flex justify-between items-center text-xs font-mono-data text-on-surface-variant">
+<span>System Log</span>
+<span class="material-symbols-outlined text-[16px]">download</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline -->
+<div class="flex-1">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-md">Event Timeline</h3>
+<div class="relative border-l border-zinc-800 ml-sm pl-md flex flex-col gap-lg">
+<!-- Timeline Item -->
+<div class="relative">
+<div class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary-container border-4 border-surface-dim"></div>
+<div class="font-mono-data text-xs text-primary-container mb-xs">Today, 14:32 UTC</div>
+<div class="bg-surface-container border border-outline-variant p-sm rounded">
+<span class="font-bold text-white">Dispute Opened</span>
+<p class="text-on-surface-variant text-sm mt-xs">xX_Slayer_Xx initiated dispute for Trade TRD-77382.</p>
+</div>
+</div>
+<!-- Timeline Item -->
+<div class="relative">
+<div class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-zinc-600 border-4 border-surface-dim"></div>
+<div class="font-mono-data text-xs text-zinc-500 mb-xs">Today, 14:15 UTC</div>
+<div class="bg-surface-container border border-outline-variant p-sm rounded">
+<span class="font-bold text-white">Escrow Funded</span>
+<p class="text-on-surface-variant text-sm mt-xs">50,000 Gold deposited into Escrow Vault #449 by xX_Slayer_Xx.</p>
+</div>
+</div>
+<!-- Timeline Item -->
+<div class="relative">
+<div class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-zinc-600 border-4 border-surface-dim"></div>
+<div class="font-mono-data text-xs text-zinc-500 mb-xs">Today, 14:10 UTC</div>
+<div class="bg-surface-container border border-outline-variant p-sm rounded">
+<span class="font-bold text-white">Trade Initiated</span>
+<p class="text-on-surface-variant text-sm mt-xs">TRD-77382 created between xX_Slayer_Xx and LootGoblin99.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Meta Sidebar -->
+<div class="w-full xl:w-64 flex flex-col gap-md">
+<div class="bg-surface-container border border-outline-variant rounded p-md">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-md">Trade Metadata</h3>
+<ul class="flex flex-col gap-sm font-mono-data text-xs">
+<li class="flex justify-between">
+<span class="text-on-surface-variant">Trade ID:</span>
+<span class="text-white">TRD-77382</span>
+</li>
+<li class="flex justify-between">
+<span class="text-on-surface-variant">Value:</span>
+<span class="text-primary-container">50,000 G</span>
+</li>
+<li class="flex justify-between">
+<span class="text-on-surface-variant">Server:</span>
+<span class="text-white">US-West-02</span>
+</li>
+<li class="flex justify-between">
+<span class="text-on-surface-variant">Zone:</span>
+<span class="text-white">Sector 7 (PVP)</span>
+</li>
+</ul>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded p-md">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-md">Parties Involved</h3>
+<div class="mb-md">
+<span class="text-xs text-zinc-500 font-label-caps uppercase">Plaintiff</span>
+<div class="flex items-center gap-sm mt-xs">
+<div class="w-8 h-8 bg-surface rounded border border-zinc-800 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-zinc-500">person</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-white">xX_Slayer_Xx</span>
+<span class="text-[10px] font-mono-data text-primary-container">Trust Score: 98</span>
+</div>
+</div>
+</div>
+<div>
+<span class="text-xs text-zinc-500 font-label-caps uppercase">Defendant</span>
+<div class="flex items-center gap-sm mt-xs">
+<div class="w-8 h-8 bg-surface rounded border border-zinc-800 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-zinc-500">person</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-white">LootGoblin99</span>
+<span class="text-[10px] font-mono-data text-error">Trust Score: 45</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-black/90 backdrop-blur-lg border-t border-zinc-800 shadow-[0_-4px_20px_rgba(0,0,0,0.8)] z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-inter text-[10px] font-bold uppercase mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-cyan-500/20 text-cyan-400 rounded-lg py-1 px-4 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">emergency_home</span>
+<span class="font-inter text-[10px] font-bold uppercase mt-1">Disputes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">show_chart</span>
+<span class="font-inter text-[10px] font-bold uppercase mt-1">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">menu</span>
+<span class="font-inter text-[10px] font-bold uppercase mt-1">Menu</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GuildOS - Members</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#cf5cff",
+                        "on-tertiary": "#313030",
+                        "on-surface": "#d4e4fa",
+                        "on-error": "#690005",
+                        "surface-container": "#122131",
+                        "primary-fixed": "#7df4ff",
+                        "tertiary-container": "#dcd9d8",
+                        "surface-container-high": "#1c2b3c",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#d4e4fa",
+                        "secondary": "#ecb2ff",
+                        "on-secondary-fixed-variant": "#74009f",
+                        "outline-variant": "#3b494b",
+                        "surface": "#051424",
+                        "on-surface-variant": "#b9cacb",
+                        "surface-variant": "#273647",
+                        "surface-container-lowest": "#010f1f",
+                        "surface-tint": "#00dbe9",
+                        "primary-container": "#00f0ff",
+                        "on-primary-fixed-variant": "#004f54",
+                        "inverse-on-surface": "#233143",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#273647",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "surface-dim": "#051424",
+                        "inverse-primary": "#006970",
+                        "on-primary-container": "#006970",
+                        "on-primary": "#00363a",
+                        "surface-container-low": "#0d1c2d",
+                        "tertiary": "#f9f5f5",
+                        "primary-fixed-dim": "#00dbe9",
+                        "outline": "#849495",
+                        "primary": "#dbfcff",
+                        "secondary-fixed-dim": "#ecb2ff",
+                        "on-tertiary-fixed-variant": "#474646",
+                        "on-tertiary-container": "#605f5e",
+                        "error-container": "#93000a",
+                        "surface-bright": "#2c3a4c",
+                        "on-secondary-container": "#480063",
+                        "inverse-surface": "#d4e4fa",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-primary-fixed": "#002022",
+                        "on-secondary-fixed": "#320047",
+                        "background": "#051424",
+                        "secondary-fixed": "#f8d8ff",
+                        "tertiary-fixed": "#e5e2e1",
+                        "on-secondary": "#520071"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "2xl": "48px",
+                        "sm": "8px",
+                        "gutter": "20px",
+                        "unit": "4px",
+                        "xl": "32px",
+                        "3xl": "64px",
+                        "margin": "24px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "mono-data": ["monospace"],
+                        "h1": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "h3": ["Inter"],
+                        "h2": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "mono-data": ["14px", { "lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500" }],
+                        "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "h2": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md flex h-screen w-full overflow-hidden antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Desktop SideNavBar -->
+<nav class="hidden md:flex flex-col py-4 bg-zinc-950 text-cyan-400 font-inter text-xs font-bold uppercase tracking-widest docked left-0 h-screen w-64 border-r border-zinc-800 flat z-40 shrink-0">
+<div class="px-md mb-xl flex items-center gap-sm">
+<img alt="Guild Insignia" class="w-8 h-8 rounded bg-surface-container border border-outline-variant object-cover" data-alt="A highly detailed macro shot of a metallic, futuristic guild insignia emblem glowing with an electric blue inner light. The background is a sleek, dark matte carbon fiber texture. The aesthetic is premium gamer-professional, high-contrast, and low-latency UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjPUfNTu7cqrlGKbJGYrbNwzciSk16fqx3fX7PQq1OiiSicpgNqeCJt9yaRhIuup-DWyFba73p47hlWuJMrKMlQqmo1rZtu4K9oNg1PP3swOkRXPNqTp0f5i82EijC5BQGKY5HlBfwKeyiRY_w58Cza_Wtf2CvqzUZCx7swjZEzG4vsvidfc0nVWBHrzrdHn-jBh5Z_VrxtV94HOQel46ZxBZLwfKI-bZwG4Z08Iv9kqOkBJ5THoJ2j4A4BDm55cLKJif4OpugBg"/>
+<div class="flex flex-col">
+<span class="text-cyan-400 font-bold font-h3 text-h3 leading-none tracking-tight">Elite Vanguard</span>
+<span class="text-zinc-500 font-label-caps text-label-caps">Realm 402</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-unit px-sm">
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-zinc-500 hover:bg-zinc-900 transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-zinc-500 hover:bg-zinc-900 transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                Supply Hub
+            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-zinc-500 hover:bg-zinc-900 transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined text-[20px]">request_quote</span>
+                Marketplace
+            </a>
+<!-- Active Tab -->
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-cyan-400 border-l-2 border-cyan-400 bg-cyan-500/5 hover:bg-zinc-900 transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">group</span>
+                Members
+            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-zinc-500 hover:bg-zinc-900 transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+                Governance
+            </a>
+</div>
+<div class="px-sm mt-auto mb-lg">
+<button class="w-full flex items-center justify-center gap-sm px-md py-sm rounded-DEFAULT bg-primary-container text-on-primary-container font-label-caps text-label-caps hover:bg-cyan-300 transition-colors">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+                Invite Member
+            </button>
+</div>
+<div class="flex flex-col gap-unit px-sm border-t border-zinc-800 pt-md mx-sm">
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-zinc-500 hover:bg-zinc-900 transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-DEFAULT text-zinc-500 hover:bg-zinc-900 transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Workspace Area -->
+<div class="flex-1 flex flex-col min-w-0 bg-background relative z-0">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 h-16 bg-zinc-950/80 backdrop-blur-md text-cyan-400 font-inter antialiased tracking-tight docked full-width top-0 z-50 border-b border-zinc-800 flat no-shadows shrink-0">
+<div class="flex items-center gap-lg">
+<span class="text-xl font-black text-cyan-400 tracking-tighter md:hidden">GuildOS</span>
+<div class="hidden md:flex items-center gap-md">
+<a class="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50 transition-colors active:scale-95 duration-150 px-sm py-unit rounded" href="#">Inventory</a>
+<a class="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50 transition-colors active:scale-95 duration-150 px-sm py-unit rounded" href="#">Orders</a>
+<a class="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50 transition-colors active:scale-95 duration-150 px-sm py-unit rounded" href="#">Vault</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="hidden md:flex items-center gap-xs px-md py-unit border border-cyan-400 text-cyan-400 font-label-caps text-label-caps rounded-DEFAULT hover:bg-cyan-900/20 transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+                    Create Request
+                </button>
+<button class="text-cyan-400 hover:bg-zinc-900/50 transition-colors active:scale-95 duration-150 p-unit rounded-full">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="text-cyan-400 hover:bg-zinc-900/50 transition-colors active:scale-95 duration-150 p-unit rounded-full mr-sm">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</button>
+<img alt="Commander Avatar" class="w-8 h-8 rounded object-cover border border-zinc-800 cursor-pointer hover:ring-2 hover:ring-cyan-400 transition-all" data-alt="A futuristic sci-fi portrait of a human commander wearing matte black stealth armor with subtle cyan glowing accents. The background is a dark, out-of-focus command deck. Lighting is cinematic and dramatic, suitable for a premium gaming UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl5_sNdKS99vGEuzEBqB5b-CqlPHTP1WW5CzYvTjYA-sMhn3l4P6sXhYt63P5LqiPVucOWTy21eIDPaRdqbTyoFoVG-O_zLYJ_qbXRnoop1B76b9EskeHL0d69A34fr6ohH5ZN_3o9cgPkLusTJLsNi_rXQHSDlsJ6-ozQa8y0boqgZ4wjohiv1nw9Tmz2-82jaCBs9IKo6kDpwCPQuA0PNbBrZzyfiOjgN6YPSlzFrp5Dc-je_RjlovO6FmyjVcXUcDDCxQir9A"/>
+</div>
+</header>
+<!-- Canvas Content -->
+<main class="flex-1 overflow-y-auto p-md md:p-margin space-y-lg pb-3xl md:pb-margin">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-lg">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface mb-unit">Roster Management</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Oversee guild members, assign roles, and monitor status.</p>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-sm px-md py-sm bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded-DEFAULT hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+                        Invite via Email
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Top Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Subscription Summary Card -->
+<div class="bg-surface-container border border-outline-variant rounded-lg p-md flex flex-col justify-between">
+<div class="flex items-center justify-between mb-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">military_tech</span>
+                            Current Tier
+                        </span>
+<span class="px-unit py-xs bg-secondary-container/20 text-secondary-container border border-secondary-container/30 rounded font-label-caps text-[10px] tracking-widest">PRO PLAN</span>
+</div>
+<div class="flex items-baseline gap-xs">
+<span class="font-h2 text-h2 text-on-surface">42</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ 50 Members</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-md overflow-hidden">
+<div class="bg-primary-container h-full rounded-full shadow-[0_0_8px_theme(colors.primary-container)]" style="width: 84%;"></div>
+</div>
+</div>
+<!-- Quick Stats 1 -->
+<div class="bg-surface-container border border-outline-variant rounded-lg p-md flex flex-col justify-between">
+<div class="flex items-center justify-between mb-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">monitoring</span>
+                            Weekly Activity
+                        </span>
+</div>
+<div class="flex items-baseline gap-xs">
+<span class="font-h2 text-h2 text-on-surface">89%</span>
+<span class="font-body-sm text-body-sm text-surface-tint flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> 2.4%</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-sm">Guild participation rate</div>
+</div>
+<!-- Quick Stats 2 -->
+<div class="bg-surface-container border border-outline-variant rounded-lg p-md flex flex-col justify-between">
+<div class="flex items-center justify-between mb-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">pending_actions</span>
+                            Pending Requests
+                        </span>
+<span class="w-2 h-2 rounded-full bg-error shadow-[0_0_6px_theme(colors.error)]"></span>
+</div>
+<div class="flex items-baseline gap-xs">
+<span class="font-h2 text-h2 text-on-surface">3</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-sm">Awaiting officer approval</div>
+</div>
+</div>
+<!-- Members Data Table Card -->
+<div class="bg-surface-container border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+<div class="p-md border-b border-outline-variant flex items-center justify-between bg-surface-container-high/50">
+<h3 class="font-h3 text-h3 text-on-surface text-[18px]">Active Personnel</h3>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="bg-surface border border-outline-variant rounded text-body-sm font-body-sm text-on-surface pl-xl pr-md py-unit focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container w-64 placeholder:text-outline transition-all" placeholder="Search members..." type="text"/>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-highest/30 border-b border-outline-variant">
+<th class="py-sm px-md font-label-caps text-label-caps text-on-surface-variant font-medium">Operative</th>
+<th class="py-sm px-md font-label-caps text-label-caps text-on-surface-variant font-medium">Designation</th>
+<th class="py-sm px-md font-label-caps text-label-caps text-on-surface-variant font-medium">Induction Date</th>
+<th class="py-sm px-md font-label-caps text-label-caps text-on-surface-variant font-medium">Status</th>
+<th class="py-sm px-md font-label-caps text-label-caps text-on-surface-variant font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-sm px-md">
+<div class="flex items-center gap-md">
+<img alt="Member Avatar" class="w-10 h-10 rounded border border-outline-variant object-cover" data-alt="A cinematic portrait of a rogue-class character in a dark, cyberpunk setting. They wear a high-tech hooded jacket with subtle neon accents. The lighting is moody with dramatic shadows and a rim light of electric blue, fitting a premium gaming aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5aHzFEQvAU8B2VYwDEUa8da3lhm8E15nT8DDFXJz5IVZWMu4Si7XyE129bjzBWcDjy6g_KS5sj9kf3u-lI1zujEzKQry7DivXVY17nDnhIglRaZ1T70JjXTAOxcG3FwvRYryVJdmTSMFIgoKpjJUYhh-n1sRy8RkPPW1TeYf5YrQnR4VJP-CDudLXdOidzgZ047P_UsFaKojLcJDRwZL2cl5gogdFt_S_X-RnsDVDE2mgEj8iIWkUUMuXr-5Ekqy9t4AgdDkoHA"/>
+<div class="flex flex-col">
+<span class="text-on-surface font-semibold group-hover:text-primary-container transition-colors">Viper_Actual</span>
+<span class="text-on-surface-variant text-[12px]">ID: 884-291</span>
+</div>
+</div>
+</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center px-sm py-unit border border-primary-container/30 bg-primary-container/10 text-primary-fixed rounded font-label-caps text-[10px] tracking-widest">
+<span class="material-symbols-outlined text-[12px] mr-unit">stars</span> LEADER
+                                    </span>
+</td>
+<td class="py-sm px-md font-mono-data text-mono-data text-on-surface-variant">2023.10.14</td>
+<td class="py-sm px-md">
+<span class="flex items-center gap-xs font-label-caps text-[11px] text-surface-tint">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-tint shadow-[0_0_6px_theme(colors.surface-tint)]"></span>
+                                        ONLINE
+                                    </span>
+</td>
+<td class="py-sm px-md text-right">
+<div class="flex items-center justify-end gap-sm opacity-50 group-hover:opacity-100 transition-opacity">
+<button class="p-unit text-on-surface-variant hover:text-primary-container transition-colors rounded hover:bg-surface-container-highest" title="Edit Role">
+<span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+</button>
+<button class="p-unit text-on-surface-variant hover:text-error transition-colors rounded hover:bg-surface-container-highest" title="Suspend">
+<span class="material-symbols-outlined text-[18px]">block</span>
+</button>
+<button class="p-unit text-on-surface-variant hover:text-error transition-colors rounded hover:bg-surface-container-highest" title="Remove">
+<span class="material-symbols-outlined text-[18px]">person_remove</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-sm px-md">
+<div class="flex items-center gap-md">
+<img alt="Member Avatar" class="w-10 h-10 rounded border border-outline-variant object-cover" data-alt="A portrait of a high-tech female operative with short hair, wearing a sleek, matte white and grey bodysuit with glowing violet energy seams. The background is a stark, dark industrial corridor. Lighting is sharp and high-contrast, evoking a modern sci-fi game UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIpbsOZ-FDZ6CWphA-_c_3S16QfZASXb4mmudueZ-IE1ZAHRJC1fnItsHskTWtblJ9y28ZaD8Q1QJiKJZ-eh4oI2SIM4MRtNcBrYJHlgdt3waoHdFcLNA01JTxAxR3vWh7yK0xwdnijzez_lwchJMJ5ZArca71utySzhXs0OZ_-LXDKxapeCJLq-tFfWv5drrJwrbOdW5aq3GR347VGZk3zkCZmnxinLeymMJakvOfWKaDEhy_8XAy0jonl45mDH0_9gkzY48-pw"/>
+<div class="flex flex-col">
+<span class="text-on-surface font-semibold group-hover:text-primary-container transition-colors">Ghost_Echo</span>
+<span class="text-on-surface-variant text-[12px]">ID: 442-109</span>
+</div>
+</div>
+</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center px-sm py-unit border border-secondary-container/30 bg-secondary-container/10 text-secondary-fixed rounded font-label-caps text-[10px] tracking-widest">
+<span class="material-symbols-outlined text-[12px] mr-unit">account_balance</span> TREASURER
+                                    </span>
+</td>
+<td class="py-sm px-md font-mono-data text-mono-data text-on-surface-variant">2023.11.02</td>
+<td class="py-sm px-md">
+<span class="flex items-center gap-xs font-label-caps text-[11px] text-surface-tint">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-tint shadow-[0_0_6px_theme(colors.surface-tint)]"></span>
+                                        ONLINE
+                                    </span>
+</td>
+<td class="py-sm px-md text-right">
+<div class="flex items-center justify-end gap-sm opacity-50 group-hover:opacity-100 transition-opacity">
+<button class="p-unit text-on-surface-variant hover:text-primary-container transition-colors rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+</button>
+<button class="p-unit text-on-surface-variant hover:text-error transition-colors rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px]">block</span>
+</button>
+<button class="p-unit text-on-surface-variant hover:text-error transition-colors rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px]">person_remove</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-sm px-md">
+<div class="flex items-center gap-md">
+<img alt="Member Avatar" class="w-10 h-10 rounded border border-outline-variant object-cover grayscale opacity-70" data-alt="A portrait of a male cyber-bruiser character. He has metallic augments on his jaw and wears heavily armored, scuffed dark grey plating. The lighting is low-key with a harsh overhead light casting deep shadows, fitting a gritty gamer-professional dashboard aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAhrWJd01mh6NRsCpWQ287DGvzxqQEsUDn5SAoPsMkKyaOZxxzMYKxwbOZ3FvHCzTO-liG_ORYscyCZFzt8XedVNCvEDUf1TQ22c_psfpTaFhdYc6Ei_Swqmoxtda4VBxuAFSxYK7HsVYm139pS0JrgL3RSZ3sDMN81ZD6o9oYICqNFfti0VZTL7ENYxWznzkuzxbsiztgNgG2_FQ6eSwwJuiks-C5cnMp6aSUM00R_mVkHziNT356cm87ajG6KwCkfECVZwsYWg"/>
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-semibold">Iron_Hide</span>
+<span class="text-on-surface-variant/70 text-[12px]">ID: 112-904</span>
+</div>
+</div>
+</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center px-sm py-unit border border-outline-variant bg-surface-container-highest text-on-surface-variant rounded font-label-caps text-[10px] tracking-widest">
+                                        MEMBER
+                                    </span>
+</td>
+<td class="py-sm px-md font-mono-data text-mono-data text-on-surface-variant">2024.01.15</td>
+<td class="py-sm px-md">
+<span class="flex items-center gap-xs font-label-caps text-[11px] text-outline">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                        OFFLINE
+                                    </span>
+</td>
+<td class="py-sm px-md text-right">
+<div class="flex items-center justify-end gap-sm opacity-50 group-hover:opacity-100 transition-opacity">
+<button class="p-unit text-on-surface-variant hover:text-primary-container transition-colors rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+</button>
+<button class="p-unit text-on-surface-variant hover:text-error transition-colors rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px]">block</span>
+</button>
+<button class="p-unit text-on-surface-variant hover:text-error transition-colors rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px]">person_remove</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+<!-- Mobile BottomNavBar -->
+<nav class="md:hidden bg-zinc-950/90 backdrop-blur-lg text-cyan-400 font-inter text-[10px] font-bold uppercase fixed bottom-0 w-full rounded-t-lg border-t border-zinc-800 shadow-[0_-4px_12px_rgba(0,0,0,0.5)] z-50 flex justify-around items-center px-4 py-2 pb-safe">
+<a class="flex flex-col items-center justify-center text-zinc-500 p-2 hover:text-cyan-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined text-[24px] mb-unit">home</span>
+            Home
+        </a>
+<a class="flex flex-col items-center justify-center text-zinc-500 p-2 hover:text-cyan-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined text-[24px] mb-unit">inventory</span>
+            Supply
+        </a>
+<a class="flex flex-col items-center justify-center text-zinc-500 p-2 hover:text-cyan-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined text-[24px] mb-unit">storefront</span>
+            Market
+        </a>
+<!-- Active Tab Intent Map (Admin -> Members) -->
+<a class="flex flex-col items-center justify-center text-cyan-400 bg-cyan-500/10 rounded-lg p-2 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined text-[24px] mb-unit" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+            Admin
+        </a>
+</nav>
+</body></html>
