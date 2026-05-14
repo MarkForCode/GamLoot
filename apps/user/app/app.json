@@ -14,7 +14,8 @@
       "bundleIdentifier": "com.gamtrade.user"
     },
     "android": {
-      "package": "com.gamtrade.user"
+      "package": "com.gamtrade.user",
+      "usesCleartextTraffic": true
     },
     "web": {},
     "extra": {

@@ -230,10 +230,14 @@ android-install-user-app:
     '
 
 test-app-native-login:
+    just appium-start
     just android-install-user-app
     APPIUM_SERVER_URL={{appium-server-url}} ANDROID_APP_PACKAGE={{user-app-package}} ANDROID_APP_ACTIVITY={{user-app-activity}} pnpm run smoke:appium:user-app
 
 test-app-native:
+    docker compose up -d --build postgres redis user-api
+    node scripts/wait-http.mjs http://localhost:8080/health
+    just db-seed || true
     just build-user-app-android
     just android-emulator-start-visible
     just appium-stop
