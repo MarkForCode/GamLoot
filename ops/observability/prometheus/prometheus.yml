@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s
+
+remote_write:
+  - url: http://mimir:9009/api/v1/push
+    queue_config:
+      capacity: 10000
+      max_samples_per_send: 2000
+      max_shards: 10
+      min_shards: 1
+    metadata_config:
+      send: true
+
+scrape_configs:
+  - job_name: user-api
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - user-api:8080
+
+  - job_name: cms-api
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - cms-api:8081
+
+  - job_name: alloy
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - alloy:12345
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - prometheus:9090

@@ -1,0 +1,113 @@
+logging {
+  level = "info"
+}
+
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    traces = [otelcol.processor.memory_limiter.traces.input]
+  }
+}
+
+otelcol.processor.memory_limiter "traces" {
+  check_interval = "1s"
+  limit = "256MiB"
+  spike_limit = "64MiB"
+
+  output {
+    traces = [otelcol.processor.batch.traces.input]
+  }
+}
+
+otelcol.processor.batch "traces" {
+  timeout = "2s"
+  send_batch_size = 512
+
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
+  }
+
+  sending_queue {
+    enabled = true
+    queue_size = 2048
+    num_consumers = 4
+  }
+
+  retry_on_failure {
+    enabled = true
+    initial_interval = "1s"
+    max_interval = "10s"
+    max_elapsed_time = "60s"
+  }
+}
+
+local.file_match "api_logs" {
+  path_targets = [
+    {
+      __path__ = "/var/log/user-api/*.log*",
+      service  = "user-api",
+      env      = "local-prod-like",
+    },
+    {
+      __path__ = "/var/log/cms-api/*.log*",
+      service  = "cms-api",
+      env      = "local-prod-like",
+    },
+  ]
+}
+
+loki.source.file "api_logs" {
+  targets    = local.file_match.api_logs.targets
+  forward_to = [loki.process.api_logs.receiver]
+}
+
+loki.process "api_logs" {
+  stage.json {
+    expressions = {
+      level      = "level",
+      message    = "message",
+      request_id = "request_id",
+      trace_id   = "trace_id",
+      span_id    = "span_id",
+      route      = "route",
+      method     = "method",
+      status     = "status",
+    }
+  }
+
+  stage.labels {
+    values = {
+      service = "service",
+      env     = "env",
+      level   = "level",
+    }
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+
+  external_labels = {
+    cluster = "local-gam-trade",
+  }
+}

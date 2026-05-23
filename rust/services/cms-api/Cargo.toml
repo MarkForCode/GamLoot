@@ -5,6 +5,7 @@ edition.workspace = true
 
 [dependencies]
 axum.workspace = true
+gam-observability = { path = "../../infrastructure/observability" }
 tokio.workspace = true
 sea-orm.workspace = true
 serde.workspace = true

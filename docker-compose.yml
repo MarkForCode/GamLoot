@@ -34,6 +34,8 @@ services:
       dockerfile: rust/services/user-api/Dockerfile
     ports:
       - "8080:8080"
+    volumes:
+      - ./logs/user-api:/var/log/user-api
     depends_on:
       postgres:
         condition: service_healthy
@@ -42,6 +44,13 @@ services:
     environment:
       DATABASE_URL: postgresql://gam_trade:gam_trade_secure_pass@postgres:5432/gam_trade_dev
       REDIS_URL: redis://redis:6379
+      APP_ENV: local-prod-like
+      LOG_FILE_PATH: /var/log/user-api/app.log
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+      OTEL_SERVICE_NAME: user-api
+      OTEL_TRACES_SAMPLER: parentbased_traceidratio
+      OTEL_TRACES_SAMPLER_ARG: "0.01"
+      RUST_LOG: info
 
   cms-api:
     build:
@@ -49,6 +58,8 @@ services:
       dockerfile: rust/services/cms-api/Dockerfile
     ports:
       - "8081:8081"
+    volumes:
+      - ./logs/cms-api:/var/log/cms-api
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,6 +68,13 @@ services:
     environment:
       DATABASE_URL: postgresql://gam_trade:gam_trade_secure_pass@postgres:5432/gam_trade_dev
       REDIS_URL: redis://redis:6379
+      APP_ENV: local-prod-like
+      LOG_FILE_PATH: /var/log/cms-api/app.log
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+      OTEL_SERVICE_NAME: cms-api
+      OTEL_TRACES_SAMPLER: parentbased_traceidratio
+      OTEL_TRACES_SAMPLER_ARG: "0.01"
+      RUST_LOG: info
 
   order-worker:
     build:
@@ -156,6 +174,95 @@ services:
       timeout: 5s
       retries: 10
 
+  alloy:
+    image: grafana/alloy:latest
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "12345:12345"
+    volumes:
+      - ./ops/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ./logs/user-api:/var/log/user-api:ro
+      - ./logs/cms-api:/var/log/cms-api:ro
+      - alloy_data:/var/lib/alloy/data
+    depends_on:
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+
+  loki:
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./ops/observability/loki/config.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo.yaml"]
+    user: "0"
+    ports:
+      - "3200:3200"
+    volumes:
+      - ./ops/observability/tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./ops/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      mimir:
+        condition: service_started
+
+  mimir:
+    image: grafana/mimir:latest
+    command: ["-config.file=/etc/mimir/config.yaml"]
+    user: "0"
+    ports:
+      - "9009:9009"
+    volumes:
+      - ./ops/observability/mimir/config.yaml:/etc/mimir/config.yaml:ro
+      - mimir_data:/data/mimir
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3002:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./ops/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+      mimir:
+        condition: service_started
+
 volumes:
   postgres_data:
   redis_data:
+  alloy_data:
+  loki_data:
+  tempo_data:
+  prometheus_data:
+  mimir_data:
+  grafana_data:

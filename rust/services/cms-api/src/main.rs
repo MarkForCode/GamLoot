@@ -1,10 +1,12 @@
 use axum::{
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
+    middleware,
     response::{IntoResponse, Response},
     routing::{get, patch, post},
     Json, Router,
 };
+use gam_observability::{metrics, track_http_request, ObservabilityConfig};
 use sea_orm::{
     ConnectionTrait, Database, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr,
     Statement, TransactionTrait,
@@ -22,7 +24,10 @@ struct AppState {
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    let _observability = gam_observability::init(ObservabilityConfig::from_env(
+        "cms-api",
+        env!("CARGO_PKG_VERSION"),
+    ));
 
     let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
         "postgresql://gam_trade:gam_trade_secure_pass@localhost:5432/gam_trade_dev".into()
@@ -33,7 +38,7 @@ async fn main() {
 
     let app = app(db);
     let addr = SocketAddr::from(([0, 0, 0, 0], 8081));
-    println!("cms-api listening on {}", addr);
+    tracing::info!(%addr, "cms-api listening");
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
@@ -44,6 +49,7 @@ fn app(db: DatabaseConnection) -> Router {
 
     Router::new()
         .route("/health", get(health))
+        .route("/metrics", get(metrics))
         .route("/auth/login", post(admin_login))
         .route("/auth/logout", post(admin_logout))
         .route("/auth/me", get(admin_me))
@@ -99,6 +105,7 @@ fn app(db: DatabaseConnection) -> Router {
         .route("/guilds/:guild_id/freeze", post(freeze_guild))
         .route("/listings/:listing_id/freeze", post(freeze_listing))
         .with_state(state)
+        .layer(middleware::from_fn(track_http_request))
 }
 
 async fn health() -> &'static str {
