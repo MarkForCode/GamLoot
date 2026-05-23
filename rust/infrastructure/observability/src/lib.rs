@@ -108,11 +108,14 @@ pub fn init(config: ObservabilityConfig) -> ObservabilityGuard {
                     .with_span_list(false)
                     .with_writer(file_writer);
                 (Some(layer), Some(guard))
-            }
+            },
             Err(error) => {
-                eprintln!("failed to initialize file logging at {}: {error}", path.display());
+                eprintln!(
+                    "failed to initialize file logging at {}: {error}",
+                    path.display()
+                );
                 (None, None)
-            }
+            },
         },
         None => (None, None),
     };
@@ -174,7 +177,7 @@ fn build_tracer_provider(config: &ObservabilityConfig) -> Option<SdkTracerProvid
         Err(error) => {
             eprintln!("failed to initialize OTLP trace exporter: {error}");
             return None;
-        }
+        },
     };
 
     let provider = SdkTracerProvider::builder()
@@ -185,7 +188,10 @@ fn build_tracer_provider(config: &ObservabilityConfig) -> Option<SdkTracerProvid
         .with_resource(
             Resource::builder()
                 .with_service_name(config.service_name.clone())
-                .with_attribute(KeyValue::new("service.version", config.service_version.clone()))
+                .with_attribute(KeyValue::new(
+                    "service.version",
+                    config.service_version.clone(),
+                ))
                 .with_attribute(KeyValue::new(
                     "deployment.environment",
                     config.environment.clone(),
