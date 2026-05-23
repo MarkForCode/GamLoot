@@ -1846,7 +1846,7 @@ async fn create_listing_from_warehouse(
             payload.tenant_id.into(),
             guild_id.into(),
             warehouse_item_id.into(),
-            (quantity * -1).into(),
+            (-quantity).into(),
             listing_id.into(),
             payload.seller_user_id.into(),
         ],

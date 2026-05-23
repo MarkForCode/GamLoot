@@ -53,11 +53,11 @@ fn app(db: DatabaseConnection) -> Router {
         .route("/auth/login", post(admin_login))
         .route("/auth/logout", post(admin_logout))
         .route("/auth/me", get(admin_me))
-        .route("/admin-users", get(list_admin_users).post(create_admin_user))
         .route(
-            "/admin-users/:admin_user_id",
-            patch(update_admin_user),
+            "/admin-users",
+            get(list_admin_users).post(create_admin_user),
         )
+        .route("/admin-users/:admin_user_id", patch(update_admin_user))
         .route(
             "/admin-users/:admin_user_id/disable",
             post(disable_admin_user),
@@ -374,7 +374,13 @@ async fn create_admin_user(
         .ok_or_else(|| ApiError::internal("admin user insert returned no row"))?;
     let admin_user_id: i32 = row.try_get("", "id")?;
 
-    replace_admin_user_roles(state.db.as_ref(), admin_user_id, actor.id, &payload.role_codes).await?;
+    replace_admin_user_roles(
+        state.db.as_ref(),
+        admin_user_id,
+        actor.id,
+        &payload.role_codes,
+    )
+    .await?;
     insert_admin_audit_log(
         state.db.as_ref(),
         actor.id,
@@ -432,7 +438,9 @@ async fn update_admin_user(
     )
     .await?;
 
-    Ok(Json(load_admin_user_summary(state.db.as_ref(), admin_user_id).await?))
+    Ok(Json(
+        load_admin_user_summary(state.db.as_ref(), admin_user_id).await?,
+    ))
 }
 
 async fn disable_admin_user(
@@ -482,7 +490,9 @@ async fn disable_admin_user(
     )
     .await?;
 
-    Ok(Json(load_admin_user_summary(state.db.as_ref(), admin_user_id).await?))
+    Ok(Json(
+        load_admin_user_summary(state.db.as_ref(), admin_user_id).await?,
+    ))
 }
 
 async fn reset_admin_user_password(
@@ -525,7 +535,11 @@ async fn reset_admin_user_password(
             )
             VALUES ($1, $2, CURRENT_TIMESTAMP + interval '24 hours', $3)
             "#,
-            vec![admin_user_id.into(), reset_token.clone().into(), actor.id.into()],
+            vec![
+                admin_user_id.into(),
+                reset_token.clone().into(),
+                actor.id.into(),
+            ],
         ))
         .await?;
     insert_admin_audit_log(
@@ -550,7 +564,11 @@ async fn list_admin_roles(
     require_any_admin_permission(
         state.db.as_ref(),
         &headers,
-        &["admin_role.manage", "admin_user.update", "admin_action.view"],
+        &[
+            "admin_role.manage",
+            "admin_user.update",
+            "admin_action.view",
+        ],
     )
     .await?;
 
@@ -905,14 +923,7 @@ async fn approve_trial_request(
         applicant_name.as_deref().unwrap_or_default(),
     )
     .await?;
-    seed_guild_owner_role(
-        &tx,
-        tenant_id,
-        guild_id,
-        guild_member_id,
-        actor.user_id,
-    )
-    .await?;
+    seed_guild_owner_role(&tx, tenant_id, guild_id, guild_member_id, actor.user_id).await?;
 
     tx.execute(Statement::from_sql_and_values(
         DbBackend::Postgres,
@@ -1497,9 +1508,13 @@ async fn create_admin_action_confirmation(
     validate_required(&payload.action, "action")?;
     validate_required(&payload.resource_type, "resource_type")?;
     validate_required(&payload.reason, "reason")?;
-    let actor =
-        resolve_cms_actor(state.db.as_ref(), &headers, payload.actor_user_id, &payload.action)
-            .await?;
+    let actor = resolve_cms_actor(
+        state.db.as_ref(),
+        &headers,
+        payload.actor_user_id,
+        &payload.action,
+    )
+    .await?;
 
     let token = Uuid::new_v4().to_string();
     let expires_minutes = payload.expires_minutes.unwrap_or(10).clamp(1, 60);
@@ -1554,9 +1569,13 @@ async fn resolve_dispute(
     Json(payload): Json<ResolveResource>,
 ) -> Result<Json<ResolveResponse>, ApiError> {
     validate_required(&payload.resolution, "resolution")?;
-    let actor =
-        resolve_cms_actor(state.db.as_ref(), &headers, payload.actor_user_id, "dispute.resolve")
-            .await?;
+    let actor = resolve_cms_actor(
+        state.db.as_ref(),
+        &headers,
+        payload.actor_user_id,
+        "dispute.resolve",
+    )
+    .await?;
     consume_admin_action_confirmation(
         state.db.as_ref(),
         Some(payload.tenant_id),
@@ -1632,9 +1651,13 @@ async fn resolve_report(
     Json(payload): Json<ResolveResource>,
 ) -> Result<Json<ResolveResponse>, ApiError> {
     validate_required(&payload.resolution, "resolution")?;
-    let actor =
-        resolve_cms_actor(state.db.as_ref(), &headers, payload.actor_user_id, "report.resolve")
-            .await?;
+    let actor = resolve_cms_actor(
+        state.db.as_ref(),
+        &headers,
+        payload.actor_user_id,
+        "report.resolve",
+    )
+    .await?;
     consume_admin_action_confirmation(
         state.db.as_ref(),
         Some(payload.tenant_id),
@@ -1710,9 +1733,13 @@ async fn freeze_user(
     Json(payload): Json<FreezeResource>,
 ) -> Result<Json<FreezeResponse>, ApiError> {
     validate_required(&payload.reason, "reason")?;
-    let actor =
-        resolve_cms_actor(state.db.as_ref(), &headers, payload.actor_user_id, "user.freeze")
-            .await?;
+    let actor = resolve_cms_actor(
+        state.db.as_ref(),
+        &headers,
+        payload.actor_user_id,
+        "user.freeze",
+    )
+    .await?;
     consume_admin_action_confirmation(
         state.db.as_ref(),
         Some(payload.tenant_id),
@@ -1787,9 +1814,13 @@ async fn freeze_guild(
     Json(payload): Json<FreezeResource>,
 ) -> Result<Json<FreezeResponse>, ApiError> {
     validate_required(&payload.reason, "reason")?;
-    let actor =
-        resolve_cms_actor(state.db.as_ref(), &headers, payload.actor_user_id, "guild.freeze")
-            .await?;
+    let actor = resolve_cms_actor(
+        state.db.as_ref(),
+        &headers,
+        payload.actor_user_id,
+        "guild.freeze",
+    )
+    .await?;
     consume_admin_action_confirmation(
         state.db.as_ref(),
         Some(payload.tenant_id),
@@ -1863,9 +1894,13 @@ async fn freeze_listing(
     Json(payload): Json<FreezeResource>,
 ) -> Result<Json<FreezeResponse>, ApiError> {
     validate_required(&payload.reason, "reason")?;
-    let actor =
-        resolve_cms_actor(state.db.as_ref(), &headers, payload.actor_user_id, "listing.freeze")
-            .await?;
+    let actor = resolve_cms_actor(
+        state.db.as_ref(),
+        &headers,
+        payload.actor_user_id,
+        "listing.freeze",
+    )
+    .await?;
     consume_admin_action_confirmation(
         state.db.as_ref(),
         Some(payload.tenant_id),
@@ -2386,7 +2421,10 @@ where
     load_admin_user_summary(db, row.try_get("", "id")?).await
 }
 
-async fn load_admin_user_summary<C>(db: &C, admin_user_id: i32) -> Result<AdminUserSummary, ApiError>
+async fn load_admin_user_summary<C>(
+    db: &C,
+    admin_user_id: i32,
+) -> Result<AdminUserSummary, ApiError>
 where
     C: ConnectionTrait,
 {
