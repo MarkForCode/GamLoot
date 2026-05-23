@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const APP_URL = process.env.APP_URL || 'http://localhost:8082';
-const EXPECT_TEXT = process.env.APP_EXPECT_TEXT || 'Game Trade - User App';
+const EXPECT_TEXT = process.env.APP_EXPECT_TEXT || 'Secure Access';
 const CHROME_BIN = process.env.CHROME_BIN || findChrome();
 const DEBUG_PORT = Number(process.env.APP_SMOKE_DEBUG_PORT || 9224);
 const FINAL_PAUSE_MS = Number(process.env.APP_SMOKE_FINAL_PAUSE_MS || 8000);

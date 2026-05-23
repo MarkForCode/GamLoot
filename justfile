@@ -99,6 +99,22 @@ docker-logs:
 docker-restart:
     docker compose restart
 
+# Observability
+obs-up:
+    ./scripts/observability/up.sh
+
+obs-smoke:
+    ./scripts/observability/smoke.sh
+
+obs-status:
+    ./scripts/observability/status.sh
+
+obs-logs:
+    docker compose logs -f alloy grafana loki mimir prometheus tempo
+
+obs-down:
+    ./scripts/observability/down.sh
+
 # Database
 db-reset:
     docker compose down -v && docker compose up --build
@@ -190,26 +206,18 @@ smoke-health:
     @echo "Smoke health check completed"
 
 test-web-smoke:
-    docker compose up -d --build postgres redis user-api user-web
-    node scripts/wait-http.mjs http://localhost:8080/health http://localhost:3000/health
-    just db-seed || true
-    APP_URL=http://localhost:3000 node scripts/smoke-user-web.mjs
+    ./scripts/flows/user-web-smoke.sh
 
 test-web: test-web-smoke
 
 test-app-web-up:
-    docker compose up -d --build postgres redis user-api user-web user-app
-    WAIT_TIMEOUT_MS=180000 node scripts/wait-http.mjs http://localhost:8080/health http://localhost:3000/health http://localhost:8082
-    just db-seed || true
+    ./scripts/flows/user-app-web-up.sh
 
 test-app-up:
-    docker compose up -d --build postgres redis user-api user-app
-    WAIT_TIMEOUT_MS=180000 node scripts/wait-http.mjs http://localhost:8080/health http://localhost:8082
-    just db-seed || true
+    ./scripts/flows/user-app-up.sh
 
 test-app-visible:
-    just test-app-up
-    APP_URL=http://localhost:8082 pnpm run smoke:user-app:visible
+    ./scripts/flows/user-app-visible.sh
 
 test-app-web-visible: test-app-visible
 
@@ -235,162 +243,23 @@ test-app-native-login:
     APPIUM_SERVER_URL={{appium-server-url}} ANDROID_APP_PACKAGE={{user-app-package}} ANDROID_APP_ACTIVITY={{user-app-activity}} pnpm run smoke:appium:user-app
 
 test-app-native:
-    docker compose up -d --build postgres redis user-api
-    node scripts/wait-http.mjs http://localhost:8080/health
-    just db-seed || true
-    just build-user-app-android
-    just android-emulator-start-visible
-    just appium-stop
-    just appium-start
-    just test-app-native-login
+    ./scripts/flows/user-app-native.sh
 
 # Web Appium tests (Android Chrome)
 android-env-check:
-    @bash -lc 'set -euo pipefail; \
-    SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"; \
-    if [ -n "$SDK_ROOT" ] && [ ! -d "$SDK_ROOT" ]; then SDK_ROOT=""; fi; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/Sdk" ]; then SDK_ROOT="$HOME/Android/Sdk"; fi; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/sdk" ]; then SDK_ROOT="$HOME/Android/sdk"; fi; \
-    echo "ANDROID_HOME=${ANDROID_HOME:-<unset>}"; \
-    echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-<unset>}"; \
-    echo "resolved_sdk=${SDK_ROOT:-<unset>}"; \
-    if [ -n "$SDK_ROOT" ]; then \
-      echo "adb=$SDK_ROOT/platform-tools/adb"; \
-      echo "emulator=$SDK_ROOT/emulator/emulator"; \
-      echo "sdkmanager=$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"; \
-      [ -x "$SDK_ROOT/platform-tools/adb" ] && "$SDK_ROOT/platform-tools/adb" devices || true; \
-    fi; \
-    '
+    ./scripts/android/env-check.sh
 
 android-devices:
-    @bash -lc 'set -euo pipefail; \
-    SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/Sdk" ]; then SDK_ROOT="$HOME/Android/Sdk"; fi; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/sdk" ]; then SDK_ROOT="$HOME/Android/sdk"; fi; \
-    ADB="$SDK_ROOT/platform-tools/adb"; \
-    if [ ! -x "$ADB" ]; then echo "adb missing at $ADB"; exit 1; fi; \
-    "$ADB" start-server >/dev/null; \
-    "$ADB" devices -l; \
-    '
+    ./scripts/android/devices.sh
 
 android-emulators:
-    @bash -lc 'set -euo pipefail; \
-    SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/Sdk" ]; then SDK_ROOT="$HOME/Android/Sdk"; fi; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/sdk" ]; then SDK_ROOT="$HOME/Android/sdk"; fi; \
-    EMULATOR_BIN="$SDK_ROOT/emulator/emulator"; \
-    if [ ! -x "$EMULATOR_BIN" ]; then \
-      echo "emulator missing at $EMULATOR_BIN"; \
-      exit 1; \
-    fi; \
-    "$EMULATOR_BIN" -list-avds; \
-    '
+    ./scripts/android/emulators.sh
 
 android-emulator-start:
-    @bash -lc 'set -euo pipefail; \
-    if [ -z "${JAVA_HOME:-}" ] && [ -d "$HOME/.local/jdk-21" ]; then export JAVA_HOME="$HOME/.local/jdk-21"; fi; \
-    if [ -n "${JAVA_HOME:-}" ]; then export PATH="$JAVA_HOME/bin:$PATH"; fi; \
-    SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/Sdk" ]; then SDK_ROOT="$HOME/Android/Sdk"; fi; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/sdk" ]; then SDK_ROOT="$HOME/Android/sdk"; fi; \
-    ADB="$SDK_ROOT/platform-tools/adb"; \
-    EMULATOR_BIN="$SDK_ROOT/emulator/emulator"; \
-    AVDMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/avdmanager"; \
-    if [ ! -x "$ADB" ]; then echo "adb missing at $ADB"; exit 1; fi; \
-    "$ADB" start-server >/dev/null 2>&1 || true; \
-    if "$ADB" devices | awk "NR>1 && \$2==\"device\" {found=1} END{exit(found?0:1)}"; then \
-      echo "Android device already connected."; \
-      "$ADB" devices -l; \
-    else \
-    if [ ! -x "$EMULATOR_BIN" ]; then \
-      echo "No Android device connected, and emulator command is missing."; \
-      echo "Install Android Emulator via Android Studio SDK tools, or connect a phone with USB debugging."; \
-      exit 1; \
-    fi; \
-    AVD_NAME="${ANDROID_AVD_NAME:-}"; \
-    if [ -z "$AVD_NAME" ]; then AVD_NAME="$($EMULATOR_BIN -list-avds | head -n 1)"; fi; \
-    if ! "$EMULATOR_BIN" -list-avds | grep -qx "$AVD_NAME"; then \
-      if [ -x "$AVDMANAGER" ]; then \
-        if [ -z "$AVD_NAME" ]; then AVD_NAME="gam_api34"; fi; \
-        echo "creating AVD $AVD_NAME..."; \
-        echo no | "$AVDMANAGER" create avd -n "$AVD_NAME" -k "system-images;android-34;google_apis;x86_64"; \
-      fi; \
-    fi; \
-    if [ -z "$AVD_NAME" ]; then \
-      echo "No AVD found. Create one in Android Studio Device Manager first."; \
-      exit 1; \
-    fi; \
-    EMULATOR_ACCEL_ARGS="-accel auto"; \
-    if [ ! -e /dev/kvm ]; then EMULATOR_ACCEL_ARGS="-accel off"; fi; \
-    nohup "$EMULATOR_BIN" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect $EMULATOR_ACCEL_ARGS >/tmp/gam-trade-emulator.log 2>&1 & \
-    echo "Starting emulator: $AVD_NAME"; \
-    CONNECTED=0; \
-    for i in $(seq 1 180); do \
-      if "$ADB" devices | awk "NR>1 && \$2==\"device\" {found=1} END{exit(found?0:1)}"; then \
-        CONNECTED=1; \
-        break; \
-      fi; \
-      sleep 1; \
-    done; \
-    if [ "$CONNECTED" -ne 1 ]; then \
-      echo "Emulator did not become ready in time. Check /tmp/gam-trade-emulator.log"; \
-      exit 1; \
-    fi; \
-    echo "Emulator connected."; \
-    "$ADB" devices -l; \
-    fi; \
-    '
+    ./scripts/android/emulator-start.sh
 
 android-emulator-start-visible:
-    @bash -lc 'set -euo pipefail; \
-    if [ -z "${JAVA_HOME:-}" ] && [ -d "$HOME/.local/jdk-21" ]; then export JAVA_HOME="$HOME/.local/jdk-21"; fi; \
-    if [ -n "${JAVA_HOME:-}" ]; then export PATH="$JAVA_HOME/bin:$PATH"; fi; \
-    SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/Sdk" ]; then SDK_ROOT="$HOME/Android/Sdk"; fi; \
-    if [ -z "$SDK_ROOT" ] && [ -d "$HOME/Android/sdk" ]; then SDK_ROOT="$HOME/Android/sdk"; fi; \
-    ADB="$SDK_ROOT/platform-tools/adb"; \
-    EMULATOR_BIN="$SDK_ROOT/emulator/emulator"; \
-    AVDMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/avdmanager"; \
-    if [ ! -x "$ADB" ]; then echo "adb missing at $ADB"; exit 1; fi; \
-    "$ADB" start-server >/dev/null 2>&1 || true; \
-    if "$ADB" devices | awk "NR>1 && \$2==\"device\" {found=1} END{exit(found?0:1)}"; then \
-      echo "Android device already connected."; \
-      "$ADB" devices -l; \
-    else \
-    if [ ! -x "$EMULATOR_BIN" ]; then \
-      echo "No Android device connected, and emulator command is missing."; \
-      exit 1; \
-    fi; \
-    AVD_NAME="${ANDROID_AVD_NAME:-}"; \
-    if [ -z "$AVD_NAME" ]; then AVD_NAME="$($EMULATOR_BIN -list-avds | head -n 1)"; fi; \
-    if ! "$EMULATOR_BIN" -list-avds | grep -qx "$AVD_NAME"; then \
-      if [ -x "$AVDMANAGER" ]; then \
-        if [ -z "$AVD_NAME" ]; then AVD_NAME="gam_api34"; fi; \
-        echo "creating AVD $AVD_NAME..."; \
-        echo no | "$AVDMANAGER" create avd -n "$AVD_NAME" -k "system-images;android-34;google_apis;x86_64"; \
-      fi; \
-    fi; \
-    if [ -z "$AVD_NAME" ]; then echo "No AVD found."; exit 1; fi; \
-    EMULATOR_ACCEL_ARGS="-accel auto"; \
-    if [ ! -e /dev/kvm ]; then EMULATOR_ACCEL_ARGS="-accel off"; fi; \
-    nohup "$EMULATOR_BIN" -avd "$AVD_NAME" -no-audio -no-boot-anim -gpu swiftshader_indirect $EMULATOR_ACCEL_ARGS >/tmp/gam-trade-emulator.log 2>&1 & \
-    echo "Starting visible emulator: $AVD_NAME"; \
-    CONNECTED=0; \
-    for i in $(seq 1 180); do \
-      if "$ADB" devices | awk "NR>1 && \$2==\"device\" {found=1} END{exit(found?0:1)}"; then \
-        CONNECTED=1; \
-        break; \
-      fi; \
-      sleep 1; \
-    done; \
-    if [ "$CONNECTED" -ne 1 ]; then \
-      echo "Emulator did not become ready in time. Check /tmp/gam-trade-emulator.log"; \
-      exit 1; \
-    fi; \
-    echo "Visible emulator connected."; \
-    "$ADB" devices -l; \
-    fi; \
-    '
+    ./scripts/android/emulator-start.sh --visible
 
 appium-start:
     @bash -lc 'set -euo pipefail; \
