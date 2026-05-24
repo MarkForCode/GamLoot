@@ -12,7 +12,7 @@ variable "environment" {
 variable "aws_region" {
   type        = string
   description = "AWS region"
-  default     = "us-east-1"
+  default     = "ap-southeast-1"
 }
 
 variable "vpc_cidr" {
@@ -57,7 +57,23 @@ variable "redis_node_type" {
 
 variable "certificate_arn" {
   type        = string
+  default     = null
   description = "ACM certificate ARN for ALB HTTPS listener"
+
+  validation {
+    condition = var.enable_https ? (
+      var.certificate_arn != null
+      && can(regex("^arn:aws(-[a-z]+)?:acm:[a-z0-9-]+:[0-9]{12}:certificate\\/[0-9a-fA-F-]+$", var.certificate_arn))
+      && !contains(["<value>", ""], trimspace(var.certificate_arn))
+    ) : true
+    error_message = "When enable_https=true, certificate_arn must be a valid ACM certificate ARN (for example: arn:aws:acm:ap-southeast-1:123456789012:certificate/uuid) and cannot be a placeholder like <value>."
+  }
+}
+
+variable "enable_https" {
+  type        = bool
+  description = "Whether ALB listener uses HTTPS (443) with ACM certificate"
+  default     = false
 }
 
 variable "container_cpu" {
@@ -96,7 +112,37 @@ variable "app_bucket_names" {
 variable "enable_observability_collector" {
   type        = bool
   description = "Whether to run the ADOT collector that maps the local compose observability flow to AWS managed services"
-  default     = true
+  default     = false
+}
+
+variable "enable_ecs_services" {
+  type        = bool
+  description = "Whether to provision ECS services and related IAM roles"
+  default     = false
+}
+
+variable "enable_cloudwatch" {
+  type        = bool
+  description = "Whether to provision CloudWatch log groups, alarms, and dashboard"
+  default     = false
+}
+
+variable "enable_grafana" {
+  type        = bool
+  description = "Whether to provision Amazon Managed Grafana and AMP workspace"
+  default     = false
+}
+
+variable "enable_rds" {
+  type        = bool
+  description = "Whether to provision RDS and DATABASE_URL parameter"
+  default     = false
+}
+
+variable "enable_redis" {
+  type        = bool
+  description = "Whether to provision ElastiCache Redis and REDIS_URL parameter"
+  default     = false
 }
 
 variable "collector_cpu" {

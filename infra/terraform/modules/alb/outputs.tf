@@ -3,7 +3,7 @@ output "dns_name" {
 }
 
 output "listener_arn" {
-  value = aws_lb_listener.https.arn
+  value = aws_lb_listener.primary.arn
 }
 
 output "security_group_id" {

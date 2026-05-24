@@ -120,6 +120,14 @@ terraform plan  -var-file=environments/prod/terraform.tfvars
 terraform apply -var-file=environments/prod/terraform.tfvars
 ```
 
+## First-time IAM setup
+
+See `IAM_BOOTSTRAP.md` for:
+
+- Which IAM roles Terraform creates when ECS/observability are enabled
+- Which feature flags avoid IAM role creation for low-permission bootstrap
+- What first-time deployers should prepare before enabling full deployment
+
 ## Notes
 
 - `db_password` and other secrets should be injected from CI/CD (not committed).
@@ -129,4 +137,4 @@ terraform apply -var-file=environments/prod/terraform.tfvars
 - Managed Grafana is created as a workspace with CloudWatch, Prometheus, and X-Ray data sources. Dashboard JSON provisioning is intentionally left for a later iteration.
 - Metrics are scraped only from `user-api` and `cms-api` in the first AWS observability pass.
 - Production enables deletion protection and should keep Multi-AZ enabled.
-- Add Route53 and ACM lifecycle management if you want full DNS + cert automation in Terraform.
+- Add Route53 and ACM lifecycle management if you want full DNS + cert automation in Terraform. For ALB, the ACM certificate must be in the same AWS region as this stack (default: ap-southeast-1).

@@ -3,6 +3,13 @@ resource "aws_security_group" "this" {
   vpc_id = var.vpc_id
 
   ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -46,11 +53,11 @@ resource "aws_lb_target_group" "service" {
   }
 }
 
-resource "aws_lb_listener" "https" {
+resource "aws_lb_listener" "primary" {
   load_balancer_arn = aws_lb.this.arn
-  port              = 443
-  protocol          = "HTTPS"
-  certificate_arn   = var.certificate_arn
+  port              = var.enable_https ? 443 : 80
+  protocol          = var.enable_https ? "HTTPS" : "HTTP"
+  certificate_arn   = var.enable_https ? var.certificate_arn : null
 
   default_action {
     type = "fixed-response"
@@ -66,7 +73,7 @@ resource "aws_lb_listener" "https" {
 resource "aws_lb_listener_rule" "service" {
   for_each = var.services
 
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.primary.arn
   priority     = each.value.priority
 
   action {
