@@ -5,7 +5,7 @@ locals {
 
   discoverable_services = {
     for name, service in var.services : name => service
-    if try(service.port, null) != null && var.service_discovery_namespace_id != null
+    if try(service.port, null) != null
   }
 }
 
@@ -65,8 +65,8 @@ resource "aws_iam_role_policy" "task_execution_ssm" {
         ]
       },
       {
-        Action = "kms:Decrypt"
-        Effect = "Allow"
+        Action   = "kms:Decrypt"
+        Effect   = "Allow"
         Resource = "*"
       }
     ]

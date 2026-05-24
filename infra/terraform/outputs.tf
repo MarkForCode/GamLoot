@@ -11,31 +11,31 @@ output "alb_target_group_arns" {
 }
 
 output "ecs_cluster_name" {
-  value = module.ecs_service.cluster_name
+  value = try(module.ecs_service[0].cluster_name, null)
 }
 
 output "ecs_service_names" {
-  value = module.ecs_service.service_names
+  value = try(module.ecs_service[0].service_names, {})
 }
 
 output "ecr_repositories" {
-  value = module.ecs_service.ecr_repositories
+  value = try(module.ecs_service[0].ecr_repositories, {})
 }
 
 output "rds_endpoint" {
-  value = module.rds.endpoint
+  value = try(module.rds[0].endpoint, null)
 }
 
 output "database_url_parameter_name" {
-  value = module.rds.database_url_parameter_name
+  value = try(module.rds[0].database_url_parameter_name, null)
 }
 
 output "redis_endpoint" {
-  value = module.redis.endpoint
+  value = try(module.redis[0].endpoint, null)
 }
 
 output "redis_url_parameter_name" {
-  value = module.redis.redis_url_parameter_name
+  value = try(module.redis[0].redis_url_parameter_name, null)
 }
 
 output "app_bucket_names" {
@@ -43,27 +43,27 @@ output "app_bucket_names" {
 }
 
 output "cloudwatch_log_group_names" {
-  value = module.cloudwatch.log_group_names
+  value = try(module.cloudwatch[0].log_group_names, {})
 }
 
 output "cloudwatch_dashboard_name" {
-  value = module.cloudwatch.dashboard_name
+  value = try(module.cloudwatch[0].dashboard_name, null)
 }
 
 output "grafana_endpoint" {
-  value = module.grafana.grafana_endpoint
+  value = try(module.grafana[0].grafana_endpoint, null)
 }
 
 output "grafana_workspace_id" {
-  value = module.grafana.grafana_workspace_id
+  value = try(module.grafana[0].grafana_workspace_id, null)
 }
 
 output "prometheus_workspace_id" {
-  value = module.grafana.prometheus_workspace_id
+  value = try(module.grafana[0].prometheus_workspace_id, null)
 }
 
 output "prometheus_remote_write_endpoint" {
-  value = module.grafana.prometheus_remote_write_endpoint
+  value = try(module.grafana[0].prometheus_remote_write_endpoint, null)
 }
 
 output "observability_collector_service_name" {
@@ -79,5 +79,5 @@ output "observability_collector_otlp_http_endpoint" {
 }
 
 output "xray_datasource_enabled" {
-  value = module.grafana.xray_datasource_enabled
+  value = try(module.grafana[0].xray_datasource_enabled, false)
 }

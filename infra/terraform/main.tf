@@ -47,7 +47,7 @@ locals {
 
   service_discovery_namespace_name = "${local.name_prefix}.local"
   collector_service_name           = "observability-collector"
-  collector_otlp_grpc_endpoint     = var.enable_observability_collector ? "http://${local.collector_service_name}.${local.service_discovery_namespace_name}:4317" : ""
+  collector_otlp_grpc_endpoint     = var.enable_ecs_services && var.enable_observability_collector ? "http://${local.collector_service_name}.${local.service_discovery_namespace_name}:4317" : ""
 
   metrics_scrape_targets = {
     "user-api" = {
@@ -63,8 +63,8 @@ locals {
   }
 
   observed_ecs_service_names = merge(
-    local.ecs_service_names,
-    var.enable_observability_collector ? {
+    var.enable_ecs_services ? local.ecs_service_names : {},
+    var.enable_ecs_services && var.enable_observability_collector ? {
       (local.collector_service_name) = "${local.name_prefix}-${local.collector_service_name}"
     } : {}
   )
@@ -86,6 +86,8 @@ module "vpc" {
 }
 
 resource "aws_service_discovery_private_dns_namespace" "this" {
+  count = var.enable_ecs_services ? 1 : 0
+
   name = local.service_discovery_namespace_name
   vpc  = module.vpc.vpc_id
 }
@@ -97,10 +99,12 @@ module "alb" {
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnets
   certificate_arn   = var.certificate_arn
+  enable_https      = var.enable_https
   services          = local.public_services
 }
 
 module "rds" {
+  count  = var.enable_rds ? 1 : 0
   source = "./modules/rds"
 
   name_prefix        = local.name_prefix
@@ -116,6 +120,7 @@ module "rds" {
 }
 
 module "redis" {
+  count  = var.enable_redis ? 1 : 0
   source = "./modules/redis"
 
   name_prefix        = local.name_prefix
@@ -126,6 +131,7 @@ module "redis" {
 }
 
 module "cloudwatch" {
+  count  = var.enable_cloudwatch ? 1 : 0
   source = "./modules/cloudwatch"
 
   name_prefix               = local.name_prefix
@@ -135,52 +141,53 @@ module "cloudwatch" {
   ecs_service_names         = local.observed_ecs_service_names
   alb_arn_suffix            = module.alb.load_balancer_arn_suffix
   target_group_arn_suffixes = module.alb.target_group_arn_suffixes
-  rds_identifier            = module.rds.identifier
-  redis_cluster_id          = module.redis.cluster_id
+  rds_identifier            = try(module.rds[0].identifier, "")
+  redis_cluster_id          = try(module.redis[0].cluster_id, "")
 }
 
 module "ecs_service" {
+  count  = var.enable_ecs_services ? 1 : 0
   source = "./modules/ecs-service"
 
-  name_prefix                 = local.name_prefix
-  environment                 = var.environment
-  aws_region                  = var.aws_region
-  vpc_id                      = module.vpc.vpc_id
-  private_subnet_ids          = module.vpc.private_subnets
-  alb_security_group_id       = module.alb.security_group_id
-  target_group_arns           = module.alb.target_group_arns
-  database_url_parameter_name = module.rds.database_url_parameter_name
-  redis_url_parameter_name    = module.redis.redis_url_parameter_name
-  log_group_names             = module.cloudwatch.log_group_names
-  container_cpu               = var.container_cpu
-  container_memory            = var.container_memory
-  desired_count               = var.desired_count
-  services                    = local.services
-  otlp_endpoint               = local.collector_otlp_grpc_endpoint
-  trace_sample_ratio          = var.trace_sample_ratio
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.this.id
+  name_prefix                    = local.name_prefix
+  environment                    = var.environment
+  aws_region                     = var.aws_region
+  vpc_id                         = module.vpc.vpc_id
+  private_subnet_ids             = module.vpc.private_subnets
+  alb_security_group_id          = module.alb.security_group_id
+  target_group_arns              = module.alb.target_group_arns
+  database_url_parameter_name    = var.enable_rds ? module.rds[0].database_url_parameter_name : ""
+  redis_url_parameter_name       = var.enable_redis ? module.redis[0].redis_url_parameter_name : ""
+  log_group_names                = var.enable_cloudwatch ? module.cloudwatch[0].log_group_names : {}
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  desired_count                  = var.desired_count
+  services                       = local.services
+  otlp_endpoint                  = local.collector_otlp_grpc_endpoint
+  trace_sample_ratio             = var.trace_sample_ratio
+  service_discovery_namespace_id = var.enable_ecs_services ? aws_service_discovery_private_dns_namespace.this[0].id : null
 
   depends_on = [module.alb]
 }
 
 module "observability_collector" {
-  count  = var.enable_observability_collector ? 1 : 0
+  count  = var.enable_ecs_services && var.enable_grafana && var.enable_observability_collector ? 1 : 0
   source = "./modules/observability-collector"
 
-  name_prefix                       = local.name_prefix
-  aws_region                        = var.aws_region
-  vpc_id                            = module.vpc.vpc_id
-  private_subnet_ids                = module.vpc.private_subnets
-  ecs_cluster_id                    = module.ecs_service.cluster_id
-  service_discovery_namespace_id    = aws_service_discovery_private_dns_namespace.this.id
-  service_discovery_namespace_name  = aws_service_discovery_private_dns_namespace.this.name
-  app_security_group_ids            = module.ecs_service.security_group_ids
-  prometheus_remote_write_endpoint  = module.grafana.prometheus_remote_write_endpoint
-  cpu                               = var.collector_cpu
-  memory                            = var.collector_memory
-  desired_count                     = var.collector_desired_count
-  log_retention_days                = var.log_retention_days
-  scrape_targets                    = local.metrics_scrape_targets
+  name_prefix                      = local.name_prefix
+  aws_region                       = var.aws_region
+  vpc_id                           = module.vpc.vpc_id
+  private_subnet_ids               = module.vpc.private_subnets
+  ecs_cluster_id                   = module.ecs_service[0].cluster_id
+  service_discovery_namespace_id   = aws_service_discovery_private_dns_namespace.this[0].id
+  service_discovery_namespace_name = aws_service_discovery_private_dns_namespace.this[0].name
+  app_security_group_ids           = module.ecs_service[0].security_group_ids
+  prometheus_remote_write_endpoint = module.grafana[0].prometheus_remote_write_endpoint
+  cpu                              = var.collector_cpu
+  memory                           = var.collector_memory
+  desired_count                    = var.collector_desired_count
+  log_retention_days               = var.log_retention_days
+  scrape_targets                   = local.metrics_scrape_targets
 }
 
 module "s3" {
@@ -191,6 +198,7 @@ module "s3" {
 }
 
 module "grafana" {
+  count  = var.enable_grafana ? 1 : 0
   source = "./modules/grafana"
 
   name_prefix              = local.name_prefix

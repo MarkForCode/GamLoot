@@ -84,9 +84,9 @@ resource "aws_cloudwatch_dashboard" "this" {
         width  = 12
         height = 6
         properties = {
-          title   = "ALB requests and errors"
-          view    = "timeSeries"
-          region  = data.aws_region.current.name
+          title  = "ALB requests and errors"
+          view   = "timeSeries"
+          region = data.aws_region.current.name
           metrics = concat(
             [["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix, { stat = "Sum" }]],
             [["AWS/ApplicationELB", "HTTPCode_ELB_5XX_Count", "LoadBalancer", var.alb_arn_suffix, { stat = "Sum" }]]

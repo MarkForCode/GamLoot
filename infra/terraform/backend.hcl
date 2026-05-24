@@ -1,6 +1,6 @@
-bucket       = "gamloot-terraform-state"
+bucket       = "markhuang-test-bucket"
 key          = "platform/terraform.tfstate"
-region       = "us-east-1"
+region       = "ap-southeast-1"
 encrypt      = true
 use_lockfile = true
 
