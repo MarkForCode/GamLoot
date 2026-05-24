@@ -115,6 +115,16 @@ obs-logs:
 obs-down:
     ./scripts/observability/down.sh
 
+# Terraform LocalStack
+tf-localstack-up:
+    ./scripts/terraform/localstack-up.sh
+
+tf-localstack-test:
+    ./scripts/terraform/localstack-test.sh
+
+tf-localstack-down:
+    ./scripts/terraform/localstack-down.sh
+
 # Database
 db-reset:
     docker compose down -v && docker compose up --build
