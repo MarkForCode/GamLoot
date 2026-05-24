@@ -103,6 +103,32 @@ Terraform 建立的角色命名為：
 
 GitHub workflow 會從 GitHub Environment variable/secret 讀取 `AWS_TERRAFORM_ROLE_ARN`。建議在 `dev`、`staging`、`prod` environments 分別設定對應環境的 role ARN。
 
+### Bootstrap prerequisite
+
+第一次 apply 不能靠 OIDC，因為 OIDC provider 和 GitHub Actions IAM role 還沒被建立。Terraform 會先初始化 S3 backend，再讀取 state、規劃和建立 AWS resources；所以 `terraform init -backend-config=backend.hcl` 本身就需要既有 AWS identity 能存取 `gamloot-terraform-state`。
+
+如果本機沒有 `AWS_PROFILE` 或 `AWS_*` credentials，會先在 backend init 階段看到 `No valid credential sources found`。建議用 AWS SSO profile 完成第一次 bootstrap：
+
+```bash
+aws configure sso
+aws sso login --profile <profile-name>
+
+export AWS_PROFILE=<profile-name>
+export AWS_REGION=us-east-1
+export AWS_DEFAULT_REGION=us-east-1
+
+cd infra/terraform
+terraform init -backend-config=backend.hcl -reconfigure
+terraform workspace select dev || terraform workspace new dev
+terraform apply \
+  -var-file=environments/dev/terraform.tfvars \
+  -var 'db_password=<value>' \
+  -var 'certificate_arn=<value>'
+terraform output github_actions_role_arn
+```
+
+把 `github_actions_role_arn` 複製到對應 GitHub Environment 的 `AWS_TERRAFORM_ROLE_ARN`。之後 GitHub Actions 會用 OIDC assume role 取得短期 AWS credentials，不需要長期 `AWS_ACCESS_KEY_ID` 或 `AWS_SECRET_ACCESS_KEY`。
+
 ## LocalStack Stack
 
 `infra/terraform-localstack` 是 LocalStack 專用 root module。它刻意只測 LocalStack 穩定支援、且和主 stack 命名/形狀有關的資源：
@@ -141,10 +167,16 @@ AWS plan/apply：
 
 ```bash
 cd infra/terraform
-terraform init -backend-config=backend.hcl
+terraform init -backend-config=backend.hcl -reconfigure
 terraform workspace select dev || terraform workspace new dev
-terraform plan -var-file=environments/dev/terraform.tfvars
-terraform apply -var-file=environments/dev/terraform.tfvars
+terraform plan \
+  -var-file=environments/dev/terraform.tfvars \
+  -var 'db_password=<value>' \
+  -var 'certificate_arn=<value>'
+terraform apply \
+  -var-file=environments/dev/terraform.tfvars \
+  -var 'db_password=<value>' \
+  -var 'certificate_arn=<value>'
 ```
 
 LocalStack test：
@@ -194,6 +226,7 @@ Terraform 相關 CI 詳細寫在 `docs/ci.md`。
 ## Troubleshooting
 
 - `terraform init -backend=false` 適合本機語法驗證，不會連 remote state。
+- 第一次 bootstrap 若看到 `No valid credential sources found`，代表 S3 backend 還沒有 AWS credentials；先用 AWS SSO 登入並設定 `AWS_PROFILE`，再用 `terraform init -backend-config=backend.hcl -reconfigure`。
 - `terraform plan` 缺少 `db_password` 或 `certificate_arn` 時，請用 `TF_VAR_db_password` / `TF_VAR_certificate_arn` 或 GitHub secrets 注入。
 - OIDC assume role 失敗時，先確認來源分支是 `main` 或 `develop`，以及 GitHub Environment 的 `AWS_TERRAFORM_ROLE_ARN` 指向正確 workspace role。
 - LocalStack 失敗時先看 `docker compose -f docker-compose.localstack.yml logs localstack`，再重跑 `just tf-localstack-down && just tf-localstack-test`。

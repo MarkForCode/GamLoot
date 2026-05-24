@@ -92,13 +92,27 @@ Terraform 會建立：
     - `repo:MarkForCode/GamLoot:ref:refs/heads/develop`
 - Terraform deploy policy，覆蓋目前 stack 需要管理的 AWS 服務。
 
-第一次 bootstrap 仍需要用既有 AWS credentials 在本機或受信任環境執行：
+### Bootstrap prerequisite
+
+第一次 bootstrap 仍需要用既有 AWS identity 在本機或受信任環境執行。原因是 Terraform 會先初始化 S3 backend，之後才會建立 GitHub OIDC provider 與 IAM role；如果本機沒有 `AWS_PROFILE` 或 `AWS_*` credentials，`terraform init -backend-config=backend.hcl` 會先失敗並顯示 `No valid credential sources found`。
+
+建議使用 AWS SSO profile bootstrap：
 
 ```bash
+aws configure sso
+aws sso login --profile <profile-name>
+
+export AWS_PROFILE=<profile-name>
+export AWS_REGION=us-east-1
+export AWS_DEFAULT_REGION=us-east-1
+
 cd infra/terraform
-terraform init -backend-config=backend.hcl
+terraform init -backend-config=backend.hcl -reconfigure
 terraform workspace select dev || terraform workspace new dev
-terraform apply -var-file=environments/dev/terraform.tfvars
+terraform apply \
+  -var-file=environments/dev/terraform.tfvars \
+  -var 'db_password=<value>' \
+  -var 'certificate_arn=<value>'
 terraform output github_actions_role_arn
 ```
 
@@ -108,7 +122,7 @@ terraform output github_actions_role_arn
 - `DB_PASSWORD`
 - `CERTIFICATE_ARN`
 
-`AWS_TERRAFORM_ROLE_ARN` 可以放 environment variable 或 secret；`DB_PASSWORD` 與 `CERTIFICATE_ARN` 應放 secrets。
+把 `github_actions_role_arn` output 複製到對應 GitHub Environment 的 `AWS_TERRAFORM_ROLE_ARN`。`AWS_TERRAFORM_ROLE_ARN` 可以放 environment variable 或 secret；`DB_PASSWORD` 與 `CERTIFICATE_ARN` 應放 secrets。role 建好後，GitHub Actions 會透過 OIDC 取得短期 AWS credentials，不需要長期 `AWS_ACCESS_KEY_ID` 或 `AWS_SECRET_ACCESS_KEY`。
 
 ## Local Commands
 
@@ -139,6 +153,7 @@ just tf-localstack-test
 ## Troubleshooting
 
 - `Terraform AWS` 的 PR 只跑 validate，不會建立 AWS credentials；這是預期行為。
+- 第一次 bootstrap 在 `terraform init` 失敗且看到 `No valid credential sources found` 時，先用 `aws sso login --profile <profile-name>` 登入，設定 `AWS_PROFILE`，再用 `terraform init -backend-config=backend.hcl -reconfigure` 重試。
 - `Terraform AWS` 的 push/manual plan 若在 configure credentials 失敗，先檢查 GitHub environment 是否有正確的 `AWS_TERRAFORM_ROLE_ARN`。
 - 若 OIDC assume role 失敗，確認 workflow 來源分支是 `main` 或 `develop`，且 IAM trust policy 的 repository 是 `MarkForCode/GamLoot`。
 - 若 Terraform plan 缺少變數，確認 target GitHub environment 有 `DB_PASSWORD` 與 `CERTIFICATE_ARN` secrets。
