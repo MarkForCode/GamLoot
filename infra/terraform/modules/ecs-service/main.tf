@@ -65,8 +65,8 @@ resource "aws_iam_role_policy" "task_execution_ssm" {
         ]
       },
       {
-        Action = "kms:Decrypt"
-        Effect = "Allow"
+        Action   = "kms:Decrypt"
+        Effect   = "Allow"
         Resource = "*"
       }
     ]

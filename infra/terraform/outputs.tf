@@ -81,3 +81,13 @@ output "observability_collector_otlp_http_endpoint" {
 output "xray_datasource_enabled" {
   value = module.grafana.xray_datasource_enabled
 }
+
+output "github_actions_role_arn" {
+  value       = try(aws_iam_role.github_actions_terraform[0].arn, null)
+  description = "IAM role ARN for GitHub Actions Terraform jobs to assume via OIDC"
+}
+
+output "github_oidc_provider_arn" {
+  value       = try(aws_iam_openid_connect_provider.github_actions[0].arn, null)
+  description = "IAM OIDC provider ARN for GitHub Actions"
+}

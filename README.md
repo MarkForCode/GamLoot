@@ -137,6 +137,11 @@ just validate-migrations # Validate database migrations
 just smoke            # Health check (requires services running)
 ```
 
+## CI/CD
+
+- `docs/ci.md` - GitHub Actions CI、Terraform LocalStack、AWS Terraform OIDC workflow 說明
+- `docs/terraform.md` - Terraform AWS / LocalStack 架構、環境與操作總覽
+
 ## OpenCode Integration
 
 This project includes OpenCode configuration:

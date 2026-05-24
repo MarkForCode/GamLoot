@@ -122,3 +122,27 @@ variable "trace_sample_ratio" {
   description = "OpenTelemetry parentbased_traceidratio sampler argument"
   default     = "0.01"
 }
+
+variable "github_oidc_enabled" {
+  type        = bool
+  description = "Whether to create the GitHub Actions OIDC provider and Terraform deploy role"
+  default     = true
+}
+
+variable "github_oidc_repository" {
+  type        = string
+  description = "GitHub repository allowed to assume the Terraform deploy role, in owner/name form"
+  default     = "MarkForCode/GamLoot"
+}
+
+variable "github_oidc_allowed_branches" {
+  type        = list(string)
+  description = "Branch names allowed to assume the Terraform deploy role through GitHub Actions OIDC"
+  default     = ["main", "develop"]
+}
+
+variable "terraform_state_bucket" {
+  type        = string
+  description = "S3 bucket that stores Terraform remote state for this stack"
+  default     = "gamloot-terraform-state"
+}

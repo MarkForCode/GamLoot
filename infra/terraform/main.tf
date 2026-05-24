@@ -142,22 +142,22 @@ module "cloudwatch" {
 module "ecs_service" {
   source = "./modules/ecs-service"
 
-  name_prefix                 = local.name_prefix
-  environment                 = var.environment
-  aws_region                  = var.aws_region
-  vpc_id                      = module.vpc.vpc_id
-  private_subnet_ids          = module.vpc.private_subnets
-  alb_security_group_id       = module.alb.security_group_id
-  target_group_arns           = module.alb.target_group_arns
-  database_url_parameter_name = module.rds.database_url_parameter_name
-  redis_url_parameter_name    = module.redis.redis_url_parameter_name
-  log_group_names             = module.cloudwatch.log_group_names
-  container_cpu               = var.container_cpu
-  container_memory            = var.container_memory
-  desired_count               = var.desired_count
-  services                    = local.services
-  otlp_endpoint               = local.collector_otlp_grpc_endpoint
-  trace_sample_ratio          = var.trace_sample_ratio
+  name_prefix                    = local.name_prefix
+  environment                    = var.environment
+  aws_region                     = var.aws_region
+  vpc_id                         = module.vpc.vpc_id
+  private_subnet_ids             = module.vpc.private_subnets
+  alb_security_group_id          = module.alb.security_group_id
+  target_group_arns              = module.alb.target_group_arns
+  database_url_parameter_name    = module.rds.database_url_parameter_name
+  redis_url_parameter_name       = module.redis.redis_url_parameter_name
+  log_group_names                = module.cloudwatch.log_group_names
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  desired_count                  = var.desired_count
+  services                       = local.services
+  otlp_endpoint                  = local.collector_otlp_grpc_endpoint
+  trace_sample_ratio             = var.trace_sample_ratio
   service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.this.id
 
   depends_on = [module.alb]
@@ -167,20 +167,20 @@ module "observability_collector" {
   count  = var.enable_observability_collector ? 1 : 0
   source = "./modules/observability-collector"
 
-  name_prefix                       = local.name_prefix
-  aws_region                        = var.aws_region
-  vpc_id                            = module.vpc.vpc_id
-  private_subnet_ids                = module.vpc.private_subnets
-  ecs_cluster_id                    = module.ecs_service.cluster_id
-  service_discovery_namespace_id    = aws_service_discovery_private_dns_namespace.this.id
-  service_discovery_namespace_name  = aws_service_discovery_private_dns_namespace.this.name
-  app_security_group_ids            = module.ecs_service.security_group_ids
-  prometheus_remote_write_endpoint  = module.grafana.prometheus_remote_write_endpoint
-  cpu                               = var.collector_cpu
-  memory                            = var.collector_memory
-  desired_count                     = var.collector_desired_count
-  log_retention_days                = var.log_retention_days
-  scrape_targets                    = local.metrics_scrape_targets
+  name_prefix                      = local.name_prefix
+  aws_region                       = var.aws_region
+  vpc_id                           = module.vpc.vpc_id
+  private_subnet_ids               = module.vpc.private_subnets
+  ecs_cluster_id                   = module.ecs_service.cluster_id
+  service_discovery_namespace_id   = aws_service_discovery_private_dns_namespace.this.id
+  service_discovery_namespace_name = aws_service_discovery_private_dns_namespace.this.name
+  app_security_group_ids           = module.ecs_service.security_group_ids
+  prometheus_remote_write_endpoint = module.grafana.prometheus_remote_write_endpoint
+  cpu                              = var.collector_cpu
+  memory                           = var.collector_memory
+  desired_count                    = var.collector_desired_count
+  log_retention_days               = var.log_retention_days
+  scrape_targets                   = local.metrics_scrape_targets
 }
 
 module "s3" {

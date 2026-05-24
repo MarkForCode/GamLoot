@@ -1,0 +1,75 @@
+name: Terraform LocalStack
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: terraform-localstack-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_REGION: us-east-1
+
+jobs:
+  terraform-localstack:
+    name: Terraform LocalStack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: infra/terratest/go.mod
+
+      - name: Install tflocal
+        run: pip install terraform-local
+
+      - name: Start LocalStack
+        run: ./scripts/terraform/localstack-up.sh
+
+      - name: Terraform test
+        working-directory: infra/terraform-localstack
+        run: |
+          terraform init
+          terraform test
+
+      - name: Terraform LocalStack plan
+        working-directory: infra/terraform-localstack
+        run: |
+          tflocal init
+          tflocal plan
+
+      - name: Terratest
+        working-directory: infra/terratest
+        run: go test ./... -v
+
+      - name: Dump LocalStack logs
+        if: always()
+        run: docker compose -f docker-compose.localstack.yml logs localstack > localstack.log
+
+      - name: Upload Terraform LocalStack artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-localstack-artifacts
+          path: |
+            localstack.log
+            infra/terraform-localstack/.terraform.lock.hcl
+            infra/terraform-localstack/terraform.tfstate*
+            infra/terratest/*.log
+          if-no-files-found: ignore
+
+      - name: Stop LocalStack
+        if: always()
+        run: ./scripts/terraform/localstack-down.sh

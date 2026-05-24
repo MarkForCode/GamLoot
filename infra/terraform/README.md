@@ -16,6 +16,7 @@ This folder provisions the core AWS services for this monorepo and supports mult
 - ADOT collector for metrics and traces
 - AWS X-Ray trace ingestion
 - SSM Parameter Store entries for shared runtime config
+- GitHub Actions OIDC provider and Terraform deploy role
 
 ## Structure
 
@@ -23,6 +24,7 @@ This folder provisions the core AWS services for this monorepo and supports mult
 - `backend.hcl`: S3 remote state backend config
 - `variables.tf`: root variables for all environments
 - `main.tf`: composes the service modules
+- `github-oidc.tf`: GitHub Actions OIDC provider, trust policy, and deploy role
 - `outputs.tf`: useful output values
 - `environments/<env>/terraform.tfvars`: per-environment values
 - `modules/alb`: ALB security group, listener, target groups, and listener rules
@@ -74,6 +76,27 @@ Workspace state paths:
 - `dev`: `s3://gamloot-terraform-state/gamloot/dev/platform/terraform.tfstate`
 - `staging`: `s3://gamloot-terraform-state/gamloot/staging/platform/terraform.tfstate`
 - `prod`: `s3://gamloot-terraform-state/gamloot/prod/platform/terraform.tfstate`
+
+## GitHub Actions OIDC
+
+Terraform creates an IAM OIDC provider for `https://token.actions.githubusercontent.com` and a deploy role named `<project>-<env>-github-actions-terraform`. The trust policy is limited to this repository and the configured branches:
+
+- repository: `github_oidc_repository`, default `MarkForCode/GamLoot`
+- branches: `github_oidc_allowed_branches`, default `["main", "develop"]`
+
+Bootstrap the role once with existing AWS credentials:
+
+```bash
+cd infra/terraform
+terraform init -backend-config=backend.hcl
+terraform workspace select dev || terraform workspace new dev
+terraform apply -var-file=environments/dev/terraform.tfvars
+terraform output github_actions_role_arn
+```
+
+Add the output role ARN to GitHub as `AWS_TERRAFORM_ROLE_ARN` (prefer a GitHub Environment variable or secret for each `dev`, `staging`, and `prod` environment; a repository-level value also works for single-environment bootstraps). The AWS Terraform workflow uses OIDC and does not require long-lived `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` values. It also expects `DB_PASSWORD` and `CERTIFICATE_ARN` secrets for plans.
+
+The workflow validates pull requests without AWS access. Pushes to `develop` plan `dev`, pushes to `main` plan `prod`, and `workflow_dispatch` can target `dev`, `staging`, or `prod`. Apply is manual only through `workflow_dispatch` with `apply=true`.
 
 ## Usage
 
