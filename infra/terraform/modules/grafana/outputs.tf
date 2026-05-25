@@ -1,19 +1,15 @@
 output "grafana_endpoint" {
-  value = aws_grafana_workspace.this.endpoint
+  value = "http://${aws_service_discovery_service.this.name}.${var.service_discovery_namespace_name}:3000"
 }
 
-output "grafana_workspace_id" {
-  value = aws_grafana_workspace.this.id
+output "grafana_service_name" {
+  value = aws_ecs_service.this.name
 }
 
-output "prometheus_workspace_id" {
-  value = aws_prometheus_workspace.this.id
+output "security_group_id" {
+  value = aws_security_group.this.id
 }
 
-output "prometheus_remote_write_endpoint" {
-  value = "${trimsuffix(aws_prometheus_workspace.this.prometheus_endpoint, "/")}/api/v1/remote_write"
-}
-
-output "xray_datasource_enabled" {
-  value = contains(aws_grafana_workspace.this.data_sources, "XRAY")
+output "service_discovery_name" {
+  value = aws_service_discovery_service.this.name
 }

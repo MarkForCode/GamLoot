@@ -62,6 +62,16 @@ variable "otlp_endpoint" {
   default = ""
 }
 
+variable "loki_endpoint" {
+  type    = string
+  default = ""
+}
+
+variable "enable_loki_logging" {
+  type    = bool
+  default = false
+}
+
 variable "trace_sample_ratio" {
   type    = string
   default = "0.01"

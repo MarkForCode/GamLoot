@@ -99,7 +99,7 @@ variable "log_retention_days" {
 
 variable "grafana_authentication_providers" {
   type        = list(string)
-  description = "Amazon Managed Grafana authentication providers"
+  description = "Legacy Amazon Managed Grafana variable retained for older tfvars; Grafana now runs on ECS"
   default     = ["AWS_SSO"]
 }
 
@@ -129,8 +129,20 @@ variable "enable_cloudwatch" {
 
 variable "enable_grafana" {
   type        = bool
-  description = "Whether to provision Amazon Managed Grafana and AMP workspace"
+  description = "Whether to provision Grafana on ECS"
   default     = false
+}
+
+variable "enable_loki" {
+  type        = bool
+  description = "Whether to provision Loki on ECS with S3 storage"
+  default     = false
+}
+
+variable "grafana_admin_password_parameter_name" {
+  type        = string
+  description = "Optional SSM SecureString parameter containing the Grafana admin password"
+  default     = ""
 }
 
 variable "enable_rds" {

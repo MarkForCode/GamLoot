@@ -7,6 +7,8 @@ locals {
     for name, service in var.services : name => service
     if try(service.port, null) != null
   }
+
+  cloudwatch_log_services = toset(keys(var.log_group_names))
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -137,8 +139,8 @@ resource "aws_ecs_task_definition" "service" {
   execution_role_arn       = aws_iam_role.task_execution.arn
   task_role_arn            = aws_iam_role.task.arn
 
-  container_definitions = jsonencode([
-    {
+  container_definitions = jsonencode(concat([
+    merge({
       name      = each.key
       image     = "${aws_ecr_repository.repos[each.key].repository_url}:latest"
       essential = true
@@ -193,6 +195,20 @@ resource "aws_ecs_task_definition" "service" {
         }
       ]
 
+      }, var.enable_loki_logging ? {
+      logConfiguration = {
+        logDriver = "awsfirelens"
+        options = {
+          "Name"       = "loki"
+          "Host"       = replace(replace(var.loki_endpoint, "http://", ""), ":3100", "")
+          "Port"       = "3100"
+          "Labels"     = "service=${each.key},env=${var.environment},cluster=${var.name_prefix},container=${each.key}"
+          "LabelKeys"  = "level"
+          "LineFormat" = "json"
+          "RemoveKeys" = "container_id,ecs_task_arn"
+        }
+      }
+      } : contains(local.cloudwatch_log_services, each.key) ? {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -201,8 +217,21 @@ resource "aws_ecs_task_definition" "service" {
           "awslogs-stream-prefix" = each.key
         }
       }
+    } : {})
+    ], var.enable_loki_logging ? [
+    {
+      name      = "log-router"
+      image     = "grafana/fluent-bit-plugin-loki:latest"
+      essential = true
+
+      firelensConfiguration = {
+        type = "fluentbit"
+        options = {
+          "enable-ecs-log-metadata" = "true"
+        }
+      }
     }
-  ])
+  ] : []))
 }
 
 resource "aws_ecs_service" "service" {

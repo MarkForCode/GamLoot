@@ -55,15 +55,15 @@ output "grafana_endpoint" {
 }
 
 output "grafana_workspace_id" {
-  value = try(module.grafana[0].grafana_workspace_id, null)
+  value = null
 }
 
 output "prometheus_workspace_id" {
-  value = try(module.grafana[0].prometheus_workspace_id, null)
+  value = null
 }
 
 output "prometheus_remote_write_endpoint" {
-  value = try(module.grafana[0].prometheus_remote_write_endpoint, null)
+  value = null
 }
 
 output "observability_collector_service_name" {
@@ -79,7 +79,15 @@ output "observability_collector_otlp_http_endpoint" {
 }
 
 output "xray_datasource_enabled" {
-  value = try(module.grafana[0].xray_datasource_enabled, false)
+  value = false
+}
+
+output "loki_gateway_endpoint" {
+  value = try(module.loki[0].gateway_endpoint, null)
+}
+
+output "loki_bucket_name" {
+  value = try(module.loki[0].bucket_name, null)
 }
 
 output "github_actions_role_arn" {

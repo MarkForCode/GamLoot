@@ -1,34 +1,34 @@
 # Observability Stack
 
-This directory contains the Grafana-based observability stack for local development with a production-shaped architecture.
+This directory contains the local Grafana OSS observability stack. It mirrors the production log shape while keeping traces and metrics local for development.
 
-The main goal is:
+The operating rule is:
 
 ```text
 Application availability > telemetry completeness
 ```
 
-Logs, metrics, and traces are best-effort signals. If Loki, Tempo, Mimir, Prometheus, or Alloy is slow or unavailable, the Rust APIs should continue serving traffic.
+Logs, metrics, and traces are best-effort signals. If Loki, Tempo, Mimir, Prometheus, Fluent Bit, or Alloy is unavailable, the app containers should continue serving traffic.
 
 ## Architecture
 
 ```text
-                         Grafana
-                    http://localhost:3002
-                  /          |          \
-                 /           |           \
-              Loki         Tempo         Mimir
-             logs         traces        metrics
-              ^             ^             ^
-              |             |             |
-            Alloy         Alloy       Prometheus
-          file tail     OTLP traces   scrape + remote_write
-              ^             ^             ^
-              |             |             |
-        JSON log files   Rust OTLP     Rust /metrics
-              \             |             /
-               \            |            /
-                user-api and cms-api
+App stdout/stderr
+  -> Docker fluentd logging driver
+  -> Fluent Bit
+  -> Loki
+  -> Grafana
+
+Rust OTLP traces
+  -> Alloy
+  -> Tempo
+  -> Grafana
+
+Rust /metrics
+  -> Prometheus scrape
+  -> Prometheus remote_write
+  -> Mimir
+  -> Grafana
 ```
 
 Grafana datasources:
@@ -37,21 +37,19 @@ Grafana datasources:
 - `Tempo`: `http://tempo:3200`
 - `Mimir`: `http://mimir:9009/prometheus`
 
-## Telemetry Pipelines
+## Logs
 
-### Logs
+Local logs follow the ECS production direction:
 
 ```text
-Rust API
-  -> JSON file under ./logs/<service>/
-  -> Alloy file tail
+App container stdout/stderr
+  -> Fluent Bit
   -> Loki
-  -> Grafana
 ```
 
-The Rust APIs also write JSON logs to stdout. In ECS production this can be used as the CloudWatch Logs fallback path.
+Docker Compose configures the app containers with the `fluentd` logging driver. The driver sends logs to `localhost:24224`, where the `fluent-bit` service listens with the forward input and writes to Loki.
 
-Loki labels must stay low-cardinality:
+Use low-cardinality Loki labels only:
 
 - `service`
 - `env`
@@ -60,7 +58,35 @@ Loki labels must stay low-cardinality:
 
 Do not promote request IDs, trace IDs, user IDs, device IDs, tokens, or full URL paths to Loki labels.
 
-### Metrics
+Query Loki directly:
+
+```bash
+curl -fsS 'http://localhost:3100/loki/api/v1/query_range?query={service="user-api"}&limit=5'
+```
+
+## Traces
+
+Traces stay on the existing local OTLP path:
+
+```text
+Rust API sampled OTLP
+  -> Alloy OTLP receiver on 4317/4318
+  -> Tempo
+  -> Grafana
+```
+
+The default sampling ratio is `1%`:
+
+```text
+OTEL_TRACES_SAMPLER=parentbased_traceidratio
+OTEL_TRACES_SAMPLER_ARG=0.01
+```
+
+For local debugging, set `OTEL_TRACES_SAMPLER_ARG=1.0`.
+
+## Metrics
+
+Metrics stay on the local Prometheus/Mimir path:
 
 ```text
 Rust API /metrics
@@ -70,34 +96,18 @@ Rust API /metrics
   -> Grafana
 ```
 
-Prometheus is used as the local scraper and remote-write agent. Mimir is the metrics backend Grafana queries.
-
-Local Prometheus uses static Docker service names because Docker Compose service names are stable:
+Prometheus scrapes:
 
 - `user-api:8080`
 - `cms-api:8081`
 - `alloy:12345`
 - `prometheus:9090`
 
-In production, replace static scrape targets with service discovery, an Alloy sidecar, or a Prometheus agent deployment.
+Query Mimir directly:
 
-### Traces
-
-```text
-Rust API sampled OTLP
-  -> Alloy OTLP receiver
-  -> Tempo
-  -> Grafana
+```bash
+curl -fsS 'http://localhost:9009/prometheus/api/v1/query?query=up'
 ```
-
-The default local sampling ratio is `1%`:
-
-```text
-OTEL_TRACES_SAMPLER=parentbased_traceidratio
-OTEL_TRACES_SAMPLER_ARG=0.01
-```
-
-For local debugging, set `OTEL_TRACES_SAMPLER_ARG=1.0`.
 
 ## Local Services
 
@@ -105,10 +115,11 @@ For local debugging, set `OTEL_TRACES_SAMPLER_ARG=1.0`.
 | --- | --- | --- |
 | Grafana | UI for logs, metrics, traces | `http://localhost:3002` |
 | Loki | Log backend | `http://localhost:3100` |
+| Fluent Bit | Log router | `localhost:24224` |
 | Tempo | Trace backend | `http://localhost:3200` |
 | Mimir | Metrics backend | `http://localhost:9009` |
 | Prometheus | Scrape and remote-write agent | `http://localhost:9090` |
-| Alloy | Log tailer and OTLP trace collector | `http://localhost:12345` |
+| Alloy | OTLP trace collector | `http://localhost:12345` |
 | OTLP gRPC | Trace ingestion into Alloy | `localhost:4317` |
 | OTLP HTTP | Trace ingestion into Alloy | `localhost:4318` |
 
@@ -118,7 +129,7 @@ Grafana login:
 admin / admin
 ```
 
-Grafana uses port `3002` locally because `user-web` already uses host port `3000`.
+Grafana uses port `3002` locally because `user-web` uses host port `3000`.
 
 ## Local Usage
 
@@ -131,7 +142,7 @@ docker compose up -d --build
 Start only observability services:
 
 ```bash
-docker compose up -d loki tempo mimir prometheus grafana alloy
+docker compose up -d loki fluent-bit tempo mimir prometheus grafana alloy
 ```
 
 Check API health:
@@ -141,73 +152,43 @@ curl localhost:8080/health
 curl localhost:8081/health
 ```
 
-Check metrics:
+Check metrics endpoints:
 
 ```bash
 curl localhost:8080/metrics
 curl localhost:8081/metrics
 ```
 
-Query Mimir directly:
-
-```bash
-curl -fsS 'http://localhost:9009/prometheus/api/v1/query?query=up'
-```
-
-Query Loki directly:
-
-```bash
-curl -fsS 'http://localhost:3100/loki/api/v1/query_range?query={service="user-api"}&limit=5'
-```
-
 ## Production Mapping
 
-Local Compose is intentionally production-shaped, but not itself production-ready.
-
-Production should use this shape:
+AWS Terraform now implements the production logs path:
 
 ```text
-Logs:
-Rust JSON file/stdout
-  -> Alloy sidecar or log agent
-  -> Loki with object storage or Grafana Cloud Logs
-
-Metrics:
-Rust /metrics
-  -> Alloy or Prometheus agent scrape
-  -> remote_write
-  -> Mimir with object storage or Grafana Cloud Metrics
-
-Traces:
-Rust sampled OTLP
-  -> Alloy sidecar or gateway
-  -> Tempo with object storage or Grafana Cloud Traces
+ECS app stdout/stderr
+  -> Fluent Bit FireLens sidecar
+  -> Loki on ECS Fargate
+  -> S3 chunks/index
+  -> Grafana on ECS
 ```
 
-For Mimir production deployment:
-
-- Do not use filesystem storage except for local testing.
-- Use S3 or another supported object store.
-- Use `mimir/config.s3.example.yaml` as the starting point.
-- In ECS, prefer task/service discovery or sidecar scraping over static targets.
-- Keep scraper local retention short if all durable metrics are remote-written to Mimir.
+Tempo, Prometheus, and Mimir remain local development services in this iteration. They are not provisioned by the AWS Terraform stack.
 
 ## Failure Behavior
 
-Expected behavior:
-
-- Loki down: APIs keep serving; logs may queue locally or be lost after rotation.
+- Fluent Bit down: APIs keep serving; Docker may buffer briefly, then logs can be lost.
+- Loki down: APIs keep serving; logs may be dropped after Fluent Bit retry/buffer pressure.
 - Tempo down: APIs keep serving; sampled traces may be dropped.
-- Mimir down: APIs keep serving; Prometheus remote-write queues temporarily, then may drop if pressure persists.
+- Mimir down: APIs keep serving; Prometheus remote-write queues temporarily, then may drop samples.
 - Prometheus down: APIs keep serving; metrics are not scraped during downtime.
-- Alloy down: APIs keep serving; logs/traces forwarding is unavailable.
+- Alloy down: APIs keep serving; trace forwarding is unavailable.
 
 Telemetry loss is acceptable under pressure. API request handling must not depend on observability backend availability.
 
 ## Files
 
-- `alloy/config.alloy`: file-tail logs and OTLP trace forwarding.
-- `loki/config.yaml`: local Loki backend.
+- `fluent-bit/fluent-bit.conf`: local stdout/stderr log routing to Loki.
+- `alloy/config.alloy`: OTLP trace forwarding to Tempo.
+- `loki/config.yaml`: local filesystem-backed Loki backend.
 - `tempo/tempo.yaml`: local Tempo backend.
 - `mimir/config.yaml`: local filesystem-backed Mimir backend.
 - `mimir/config.s3.example.yaml`: production-oriented S3-backed Mimir example.

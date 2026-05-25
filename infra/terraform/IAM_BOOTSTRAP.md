@@ -1,72 +1,88 @@
-# IAM Bootstrap Guide (First Deployment)
+# IAM Bootstrap Guide
 
 This document explains which IAM roles are involved in Terraform deployment, so first-time deployers know what must exist or be permitted.
 
-## 1) Current default dev mode (low-permission)
+## 1. Default Dev Mode
 
-In `environments/dev/terraform.tfvars`, these are currently disabled:
+In `environments/dev/terraform.tfvars`, the high-permission services are disabled by default:
 
 - `enable_ecs_services = false`
 - `enable_cloudwatch = false`
 - `enable_grafana = false`
+- `enable_loki = false`
 - `enable_observability_collector = false`
 - `enable_rds = false`
 - `enable_redis = false`
 
-In this mode, Terraform does **not** create ECS/ADOT task roles, so these high-risk IAM actions are not required:
+In this mode, Terraform does not create ECS, Loki, Grafana, or ADOT task roles, so these IAM actions are not required:
 
 - `iam:CreateRole`
+- `iam:AttachRolePolicy`
 - `iam:PutRolePolicy`
+- `iam:PassRole`
 
-It also skips:
+It also skips RDS, Redis, and observability runtime provisioning.
 
-- RDS creation (`rds:CreateDBSubnetGroup` not required)
-- Redis URL SSM write (`ssm:PutParameter` on `/${project}-${env}/REDIS_URL` not required)
+## 2. Roles Created When ECS Is Enabled
 
-## 2) Roles created when ECS is enabled
-
-If you set `enable_ecs_services = true`, Terraform creates these roles in `modules/ecs-service/main.tf`:
+If `enable_ecs_services = true`, Terraform creates these roles in `modules/ecs-service`:
 
 - `${project}-${env}-ecs-execution`
 - `${project}-${env}-ecs-task`
 
-Example for dev (`project_name=gamloot`, `environment=dev`):
+The execution role pulls images, reads SSM parameters for runtime secrets, and starts Fargate tasks. App task definitions also include a Fluent Bit FireLens sidecar when `enable_loki = true`.
 
-- `gamloot-dev-ecs-execution`
-- `gamloot-dev-ecs-task`
+## 3. Roles Created When Loki Is Enabled
 
-## 3) Additional roles created when observability collector is enabled
+If both flags are true:
+
+- `enable_ecs_services = true`
+- `enable_loki = true`
+
+Terraform creates these roles in `modules/loki`:
+
+- `${project}-${env}-loki-execution`
+- `${project}-${env}-loki-task`
+
+The Loki task role needs S3 permissions for the Loki bucket:
+
+- `s3:ListBucket`
+- `s3:GetObject`
+- `s3:PutObject`
+- `s3:DeleteObject`
+
+## 4. Roles Created When Grafana Is Enabled
 
 If all below are true:
 
 - `enable_ecs_services = true`
+- `enable_loki = true`
 - `enable_grafana = true`
-- `enable_observability_collector = true`
 
-Terraform also creates these roles in `modules/observability-collector/main.tf`:
+Terraform creates these roles in `modules/grafana`:
 
-- `${project}-${env}-adot-execution`
-- `${project}-${env}-adot-task`
+- `${project}-${env}-grafana-execution`
+- `${project}-${env}-grafana-task`
 
-Example for dev:
+If `grafana_admin_password_parameter_name` is set, the Grafana execution role can read that SSM SecureString parameter and decrypt it with KMS.
 
-- `gamloot-dev-adot-execution`
-- `gamloot-dev-adot-task`
+## 5. Legacy ADOT Collector
 
-## 4) What first-time deployers should prepare
+`enable_observability_collector` is retained as a compatibility variable, but the root stack does not currently provision the ADOT collector. AWS metrics/traces are intentionally out of scope for this logs-first Loki migration.
 
-Choose one path:
+## 6. Deployment Paths
 
-1. Low-permission bootstrap (recommended for first run)
-- Keep the six flags above as `false`.
-- No ECS/ADOT IAM role creation is attempted.
+Low-permission bootstrap:
+
+- Keep the default dev flags disabled.
+- No ECS/Loki/Grafana IAM role creation is attempted.
 - RDS/Redis provisioning is skipped.
 
-2. Full platform deployment
-- Enable ECS/observability flags.
-- Ensure deployer principal is allowed to create and pass IAM roles, including:
-`iam:CreateRole`, `iam:AttachRolePolicy`, `iam:PutRolePolicy`, `iam:PassRole`.
+Full logs platform deployment:
 
-## 5) Related note
+- Enable ECS, Loki, and Grafana.
+- Ensure the deployer principal can create and pass IAM roles:
+  `iam:CreateRole`, `iam:AttachRolePolicy`, `iam:PutRolePolicy`, `iam:PassRole`.
+- Ensure the deployer principal can create and manage S3 buckets used by Loki.
 
-Even in low-permission mode, other non-IAM permissions may still be needed depending on enabled modules (for example VPC, ALB, RDS, Redis, S3).
+Other non-IAM permissions may still be needed depending on enabled modules, such as VPC, ALB, RDS, Redis, S3, ECS, and Service Discovery.

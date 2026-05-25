@@ -6,6 +6,10 @@ variable "environment" {
   type = string
 }
 
+variable "aws_region" {
+  type = string
+}
+
 variable "vpc_id" {
   type = string
 }
@@ -30,8 +34,13 @@ variable "service_discovery_namespace_name" {
   type = string
 }
 
-variable "loki_endpoint" {
-  type = string
+variable "app_security_group_ids" {
+  type = map(string)
+}
+
+variable "grafana_security_group_id" {
+  type    = string
+  default = null
 }
 
 variable "cpu" {
@@ -44,8 +53,7 @@ variable "memory" {
   default = 512
 }
 
-variable "admin_password_parameter_name" {
-  type        = string
-  description = "SSM SecureString parameter containing the Grafana admin password. Leave empty to use the image default."
-  default     = ""
+variable "desired_count" {
+  type    = number
+  default = 1
 }

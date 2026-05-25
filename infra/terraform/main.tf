@@ -48,6 +48,7 @@ locals {
   service_discovery_namespace_name = "${local.name_prefix}.local"
   collector_service_name           = "observability-collector"
   collector_otlp_grpc_endpoint     = var.enable_ecs_services && var.enable_observability_collector ? "http://${local.collector_service_name}.${local.service_discovery_namespace_name}:4317" : ""
+  loki_gateway_endpoint            = var.enable_ecs_services && var.enable_loki ? "http://loki.${local.service_discovery_namespace_name}:3100" : ""
 
   metrics_scrape_targets = {
     "user-api" = {
@@ -64,8 +65,14 @@ locals {
 
   observed_ecs_service_names = merge(
     var.enable_ecs_services ? local.ecs_service_names : {},
-    var.enable_ecs_services && var.enable_observability_collector ? {
-      (local.collector_service_name) = "${local.name_prefix}-${local.collector_service_name}"
+    var.enable_ecs_services && var.enable_loki ? {
+      "loki-write"   = "${local.name_prefix}-loki-write"
+      "loki-read"    = "${local.name_prefix}-loki-read"
+      "loki-backend" = "${local.name_prefix}-loki-backend"
+      "loki-gateway" = "${local.name_prefix}-loki-gateway"
+    } : {},
+    var.enable_ecs_services && var.enable_grafana ? {
+      "grafana" = "${local.name_prefix}-grafana"
     } : {}
   )
 }
@@ -164,14 +171,32 @@ module "ecs_service" {
   desired_count                  = var.desired_count
   services                       = local.services
   otlp_endpoint                  = local.collector_otlp_grpc_endpoint
+  loki_endpoint                  = local.loki_gateway_endpoint
+  enable_loki_logging            = var.enable_loki
   trace_sample_ratio             = var.trace_sample_ratio
   service_discovery_namespace_id = var.enable_ecs_services ? aws_service_discovery_private_dns_namespace.this[0].id : null
 
   depends_on = [module.alb]
 }
 
+module "loki" {
+  count  = var.enable_ecs_services && var.enable_loki ? 1 : 0
+  source = "./modules/loki"
+
+  name_prefix                      = local.name_prefix
+  environment                      = var.environment
+  aws_region                       = var.aws_region
+  vpc_id                           = module.vpc.vpc_id
+  vpc_cidr                         = var.vpc_cidr
+  private_subnet_ids               = module.vpc.private_subnets
+  ecs_cluster_id                   = module.ecs_service[0].cluster_id
+  service_discovery_namespace_id   = aws_service_discovery_private_dns_namespace.this[0].id
+  service_discovery_namespace_name = aws_service_discovery_private_dns_namespace.this[0].name
+  app_security_group_ids           = module.ecs_service[0].security_group_ids
+}
+
 module "observability_collector" {
-  count  = var.enable_ecs_services && var.enable_grafana && var.enable_observability_collector ? 1 : 0
+  count  = 0
   source = "./modules/observability-collector"
 
   name_prefix                      = local.name_prefix
@@ -182,7 +207,7 @@ module "observability_collector" {
   service_discovery_namespace_id   = aws_service_discovery_private_dns_namespace.this[0].id
   service_discovery_namespace_name = aws_service_discovery_private_dns_namespace.this[0].name
   app_security_group_ids           = module.ecs_service[0].security_group_ids
-  prometheus_remote_write_endpoint = module.grafana[0].prometheus_remote_write_endpoint
+  prometheus_remote_write_endpoint = ""
   cpu                              = var.collector_cpu
   memory                           = var.collector_memory
   desired_count                    = var.collector_desired_count
@@ -198,9 +223,19 @@ module "s3" {
 }
 
 module "grafana" {
-  count  = var.enable_grafana ? 1 : 0
+  count  = var.enable_ecs_services && var.enable_grafana && var.enable_loki ? 1 : 0
   source = "./modules/grafana"
 
-  name_prefix              = local.name_prefix
-  authentication_providers = var.grafana_authentication_providers
+  name_prefix                      = local.name_prefix
+  environment                      = var.environment
+  vpc_id                           = module.vpc.vpc_id
+  vpc_cidr                         = var.vpc_cidr
+  private_subnet_ids               = module.vpc.private_subnets
+  ecs_cluster_id                   = module.ecs_service[0].cluster_id
+  service_discovery_namespace_id   = aws_service_discovery_private_dns_namespace.this[0].id
+  service_discovery_namespace_name = aws_service_discovery_private_dns_namespace.this[0].name
+  loki_endpoint                    = local.loki_gateway_endpoint
+  admin_password_parameter_name    = var.grafana_admin_password_parameter_name
+
+  depends_on = [module.loki]
 }
