@@ -186,10 +186,20 @@ CREATE TABLE IF NOT EXISTS listing_bids (
     cancel_reason TEXT
 );
 
-ALTER TABLE listings
-    ADD CONSTRAINT fk_listings_matched_bid
-    FOREIGN KEY (matched_bid_id)
-    REFERENCES listing_bids(id);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fk_listings_matched_bid'
+          AND conrelid = 'listings'::regclass
+    ) THEN
+        ALTER TABLE listings
+            ADD CONSTRAINT fk_listings_matched_bid
+            FOREIGN KEY (matched_bid_id)
+            REFERENCES listing_bids(id);
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS trade_deposits (
     id SERIAL PRIMARY KEY,

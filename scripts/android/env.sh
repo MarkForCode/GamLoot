@@ -27,6 +27,10 @@ android_resolve_sdk() {
     sdk_root="$HOME/Android/sdk"
   fi
 
+  if [ -z "$sdk_root" ] && [ -d "$HOME/Library/Android/sdk" ]; then
+    sdk_root="$HOME/Library/Android/sdk"
+  fi
+
   printf '%s\n' "$sdk_root"
 }
 
@@ -36,6 +40,7 @@ android_require_sdk() {
 
   if [ -z "$sdk_root" ]; then
     echo "Android SDK not found. Set ANDROID_HOME/ANDROID_SDK_ROOT, or install Android SDK."
+    echo "Checked: \$ANDROID_SDK_ROOT, \$ANDROID_HOME, ~/Android/Sdk, ~/Android/sdk, ~/Library/Android/sdk"
     echo "Run: just android-env-check"
     exit 1
   fi

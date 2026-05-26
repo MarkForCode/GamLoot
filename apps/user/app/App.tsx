@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Button,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -34,7 +35,9 @@ type DemoUser = {
   hint: string;
 };
 
-const USER_API_URL = process.env?.EXPO_PUBLIC_USER_API_URL || 'http://10.0.2.2:8080';
+const USER_API_URL =
+  process.env?.EXPO_PUBLIC_USER_API_URL ||
+  (Platform.OS === 'ios' ? 'http://127.0.0.1:8080' : 'http://10.0.2.2:8080');
 
 const demoUsers: Record<LoginKind, DemoUser> = {
   owner: {
@@ -147,6 +150,7 @@ export default function App() {
                 const isActive = kind === option;
                 return (
                   <Pressable
+                    accessible
                     accessibilityLabel={`role-${option}`}
                     accessibilityRole="button"
                     key={option}
@@ -199,20 +203,19 @@ export default function App() {
                 <Text style={styles.inlineLink}>Forgot Password?</Text>
               </View>
 
-              <Pressable
-                accessibilityLabel="login-submit"
-                accessibilityRole="button"
-                disabled={isSubmitting}
-                onPress={() => void login(kind)}
-                style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-                testID="login-submit"
-              >
+              <View style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}>
                 {isSubmitting ? (
                   <ActivityIndicator color={palette.onPrimary} />
                 ) : (
-                  <Text style={styles.submitText}>INITIALIZE LOGIN</Text>
+                  <Button
+                    accessibilityLabel="login-submit"
+                    color={palette.onPrimary}
+                    onPress={() => void login(kind)}
+                    testID="login-submit"
+                    title="INITIALIZE LOGIN"
+                  />
                 )}
-              </Pressable>
+              </View>
             </View>
 
             <View style={styles.dividerRow}>
@@ -235,10 +238,10 @@ export default function App() {
                 <Text style={styles.statusEyebrow}>Session</Text>
                 <View style={[styles.statusDot, currentValues.session ? styles.dotOnline : styles.dotIdle]} />
               </View>
-              <Text accessibilityLabel="session-summary" style={styles.statusTitle} testID="session-summary">
+              <Text style={styles.statusTitle} testID="session-summary">
                 {sessionSummary}
               </Text>
-              <Text accessibilityLabel="login-response" style={styles.responseBox} testID="login-response">
+              <Text style={styles.responseBox} testID="login-response">
                 {response}
               </Text>
             </View>

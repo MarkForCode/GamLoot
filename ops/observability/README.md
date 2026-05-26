@@ -173,6 +173,23 @@ ECS app stdout/stderr
 
 Tempo, Prometheus, and Mimir remain local development services in this iteration. They are not provisioned by the AWS Terraform stack.
 
+Current local/Terraform signal mapping:
+
+| Signal | Local Docker Compose | AWS Terraform |
+| --- | --- | --- |
+| Logs | Docker fluentd driver -> Fluent Bit -> Loki -> Grafana | FireLens Fluent Bit sidecar -> Loki gateway/read/write/backend on ECS -> S3 chunks/index -> Grafana on ECS |
+| Traces | Alloy OTLP receiver -> Tempo -> Grafana | Not provisioned. The legacy `observability-collector` module exists, but the root module currently sets `count = 0`. |
+| Metrics | Prometheus scrape -> remote_write -> Mimir -> Grafana | Not provisioned through the Grafana OSS path. CloudWatch can provide AWS service alarms/dashboard when enabled. |
+
+Terraform-specific notes:
+
+- Grafana on ECS is provisioned with a Loki datasource only. Local Grafana also has Tempo and Mimir datasources, plus trace/log linking.
+- Loki on Terraform runs as separate `write`, `read`, `backend`, and `gateway` ECS services, with S3-backed TSDB storage and retention enabled.
+- App ECS task definitions set OTEL environment variables. When the collector is disabled, the OTLP endpoint is empty and traces are not exported.
+- `enable_observability_collector` is currently a placeholder flag: the root module does not use it to create the collector service yet.
+- When Loki logging is enabled, app containers use the `awsfirelens` log driver and a `log-router` sidecar. Keep the application-availability rule in mind when changing FireLens behavior.
+- Terraform adds a `container` Loki label in addition to the local low-cardinality labels. This is currently low cardinality because it matches the service/container name, but avoid adding request/user/device identifiers as labels.
+
 ## Failure Behavior
 
 - Fluent Bit down: APIs keep serving; Docker may buffer briefly, then logs can be lost.

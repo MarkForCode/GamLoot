@@ -10,6 +10,7 @@
     "build:rust": "cargo build --release",
     "smoke:appium:login": "node scripts/smoke-appium-login.mjs",
     "smoke:appium:user-app": "node scripts/smoke-appium-user-app.mjs",
+    "smoke:appium:ios-user-app": "node scripts/smoke-appium-ios-user-app.mjs",
     "smoke:user-app:visible": "node scripts/smoke-user-app-web.mjs"
   },
   "devDependencies": {

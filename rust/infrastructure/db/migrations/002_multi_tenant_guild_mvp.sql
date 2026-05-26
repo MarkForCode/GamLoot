@@ -185,10 +185,20 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-ALTER TABLE guilds
-    ADD CONSTRAINT fk_guilds_owner_user
-    FOREIGN KEY (owner_user_id)
-    REFERENCES users(id);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fk_guilds_owner_user'
+          AND conrelid = 'guilds'::regclass
+    ) THEN
+        ALTER TABLE guilds
+            ADD CONSTRAINT fk_guilds_owner_user
+            FOREIGN KEY (owner_user_id)
+            REFERENCES users(id);
+    END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_users_tenant ON users(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_users_guild ON users(guild_id);

@@ -34,6 +34,11 @@ Thumbs.db
 # Test coverage
 coverage/
 
+# Test reports
+reports/appium/*.json
+reports/appium/*.md
+!reports/appium/.gitkeep
+
 # Terraform
 **/.terraform/
 *.tfstate
