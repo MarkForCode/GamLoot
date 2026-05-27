@@ -26,6 +26,9 @@ importers:
       webdriverio:
         specifier: ^9.16.0
         version: 9.27.1
+      ws:
+        specifier: ^8.20.0
+        version: 8.20.0
 
   apps/admin/web:
     dependencies:
