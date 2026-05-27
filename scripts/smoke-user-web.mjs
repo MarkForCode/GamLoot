@@ -3,10 +3,12 @@ import { existsSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import WebSocket from 'ws';
 
 const BASE_URL = process.env.APP_URL || 'http://localhost:3000';
 const CHROME_BIN = process.env.CHROME_BIN || findChrome();
 const DEBUG_PORT = Number(process.env.WEB_SMOKE_DEBUG_PORT || 9223);
+const CHROME_READY_TIMEOUT_MS = Number(process.env.WEB_SMOKE_CHROME_READY_TIMEOUT_MS || 60000);
 const SLOW_MS = Number(process.env.WEB_SMOKE_SLOW_MS || 650);
 const FINAL_PAUSE_MS = Number(process.env.WEB_SMOKE_FINAL_PAUSE_MS || 8000);
 const KEEP_OPEN = process.env.WEB_SMOKE_KEEP_OPEN === '1';
@@ -20,6 +22,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function findChrome() {
   return [
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
     '/usr/bin/google-chrome',
     '/usr/bin/google-chrome-stable',
     '/usr/bin/chromium',
@@ -45,6 +50,19 @@ async function waitForJson(url, timeoutMs = 15000) {
     }
   }
   throw new Error(`Timed out waiting for ${url}`);
+}
+
+function createStderrTail(maxLength = 4000) {
+  let stderr = '';
+  return {
+    push(chunk) {
+      stderr = `${stderr}${String(chunk)}`;
+      if (stderr.length > maxLength) stderr = stderr.slice(-maxLength);
+    },
+    text() {
+      return stderr.trim();
+    },
+  };
 }
 
 class CdpClient {
@@ -202,10 +220,14 @@ async function run() {
   console.log(`[smoke] Starting visible Chrome: ${CHROME_BIN}`);
   const userDataDir = await mkdtemp(join(tmpdir(), 'gam-web-smoke-'));
   const chrome = spawn(CHROME_BIN, [
+    '--remote-debugging-address=127.0.0.1',
     `--remote-debugging-port=${DEBUG_PORT}`,
+    '--remote-allow-origins=*',
     `--user-data-dir=${userDataDir}`,
     '--no-first-run',
     '--no-default-browser-check',
+    '--disable-background-networking',
+    '--disable-default-apps',
     '--window-size=420,900',
     '--new-window',
     HEADLESS ? '--headless=new' : '',
@@ -214,14 +236,25 @@ async function run() {
     stdio: ['ignore', 'ignore', 'pipe'],
   });
 
+  const stderrTail = createStderrTail();
+  let chromeExit;
+  chrome.once('exit', (code, signal) => {
+    chromeExit = { code, signal };
+  });
+
   chrome.stderr.on('data', (chunk) => {
     const text = String(chunk);
-    if (/ERROR|FATAL/i.test(text)) process.stderr.write(text);
+    stderrTail.push(text);
+    if (/ERROR|FATAL|DevTools listening/i.test(text)) process.stderr.write(text);
   });
 
   let client;
   try {
-    const targets = await waitForJson(`http://127.0.0.1:${DEBUG_PORT}/json/list`);
+    const targets = await waitForJson(`http://127.0.0.1:${DEBUG_PORT}/json/list`, CHROME_READY_TIMEOUT_MS).catch((error) => {
+      const exit = chromeExit ? ` Chrome exited with code=${chromeExit.code} signal=${chromeExit.signal}.` : '';
+      const tail = stderrTail.text();
+      throw new Error(`${error.message}.${exit}${tail ? `\nChrome stderr:\n${tail}` : ''}`);
+    });
     const page = targets.find((target) => target.type === 'page') || targets[0];
     if (!page?.webSocketDebuggerUrl) throw new Error('Could not find Chrome page target.');
 
