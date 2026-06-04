@@ -38,6 +38,8 @@ coverage/
 reports/appium/*.json
 reports/appium/*.md
 !reports/appium/.gitkeep
+reports/k6/*.json
+!reports/k6/.gitkeep
 
 # Terraform
 **/.terraform/

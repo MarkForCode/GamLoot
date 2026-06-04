@@ -252,6 +252,19 @@ check-user-web:
 
 check-all: validate-migrations check-rust check-user-web check-admin-web
 
+# Load testing
+k6-smoke:
+    K6_PROFILE=smoke ./scripts/k6/run-local.sh
+
+k6-baseline:
+    K6_PROFILE=baseline ./scripts/k6/run-local.sh
+
+k6-stress:
+    K6_PROFILE=stress ./scripts/k6/run-local.sh
+
+k6-docker:
+    ./scripts/k6/run-docker.sh
+
 # Type check
 typecheck:
     ./scripts/pnpm.sh run --filter=* typecheck || echo "No typecheck command in turbo pipeline"

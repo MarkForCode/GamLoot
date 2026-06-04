@@ -12,6 +12,7 @@ target/
 **/node_modules/
 reports/appium/*.json
 reports/appium/*.md
+reports/k6/*.json
 apps/user/app/ios/build/
 apps/user/app/ios/Pods/
 apps/user/app/ios/xcuserdata/
