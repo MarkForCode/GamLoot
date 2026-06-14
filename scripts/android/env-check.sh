@@ -10,6 +10,7 @@ SDK_ROOT="$(android_resolve_sdk)"
 echo "ANDROID_HOME=${ANDROID_HOME:-<unset>}"
 echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-<unset>}"
 echo "resolved_sdk=${SDK_ROOT:-<unset>}"
+echo "checked_paths=ANDROID_SDK_ROOT, ANDROID_HOME, ~/Android/Sdk, ~/Android/sdk, ~/Library/Android/sdk"
 
 if [ -n "$SDK_ROOT" ]; then
   ADB="$SDK_ROOT/platform-tools/adb"
@@ -21,4 +22,6 @@ if [ -n "$SDK_ROOT" ]; then
   if [ -x "$ADB" ]; then
     "$ADB" devices || true
   fi
+else
+  echo "Android SDK not found. Install Android Studio SDK tools or set ANDROID_HOME/ANDROID_SDK_ROOT."
 fi

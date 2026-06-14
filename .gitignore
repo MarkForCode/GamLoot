@@ -34,5 +34,33 @@ Thumbs.db
 # Test coverage
 coverage/
 
+# Test reports
+reports/appium/*.json
+reports/appium/*.md
+!reports/appium/.gitkeep
+reports/k6/*.json
+!reports/k6/.gitkeep
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
 # Misc
 *.tsbuildinfo
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+terraform.tfvars
+*.auto.tfvars
+*.tfvars.local

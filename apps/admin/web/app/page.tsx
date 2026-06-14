@@ -1,6 +1,6 @@
 'use client';
 
-import { ComponentProps, ReactNode, useEffect, useState } from 'react';
+import { ComponentProps, CSSProperties, ReactNode, useEffect, useState } from 'react';
 import { Button, Image, Input, Paragraph, ScrollView, Text, TextArea, XStack, YStack } from '@repo/ui';
 
 type StackProps = ComponentProps<typeof YStack>;
@@ -46,6 +46,46 @@ type AdminRole = {
   permissions: string[];
 };
 
+type DiagnosticLogRule = {
+  id: number;
+  service: string;
+  method: string;
+  route: string;
+  enabled: boolean;
+  expires_at: string;
+  reason: string;
+  created_by_admin_user_id?: number | null;
+  created_at: string;
+  updated_at: string;
+  state: string;
+};
+
+const DIAGNOSTIC_ROUTE_OPTIONS = [
+  { label: 'POST /auth/login', method: 'POST', route: '/auth/login' },
+  { label: 'GET /health', method: 'GET', route: '/health' },
+  { label: 'GET /metrics', method: 'GET', route: '/metrics' },
+  { label: 'POST /trial-requests', method: 'POST', route: '/trial-requests' },
+  { label: 'GET /listings/:listing_id', method: 'GET', route: '/listings/:listing_id' },
+  { label: 'POST /guilds/:guild_id/listings', method: 'POST', route: '/guilds/:guild_id/listings' },
+];
+
+const miniButtonStyle: CSSProperties = {
+  background: '#ffffff',
+  border: '1px solid #c8d2cc',
+  borderRadius: 8,
+  color: '#20231f',
+  cursor: 'pointer',
+  fontSize: 13,
+  fontWeight: 700,
+  padding: '7px 10px',
+};
+
+const dangerMiniButtonStyle: CSSProperties = {
+  ...miniButtonStyle,
+  border: '1px solid #d8b4aa',
+  color: '#8a3324',
+};
+
 export default function AdminReviewFlow() {
   const [token, setToken] = useState<string | null>(null);
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
@@ -64,6 +104,10 @@ export default function AdminReviewFlow() {
   const [newAdminName, setNewAdminName] = useState('');
   const [newAdminPasswordHash, setNewAdminPasswordHash] = useState('temporary-admin-password-hash');
   const [newAdminRole, setNewAdminRole] = useState('platform_support');
+  const [diagnosticRules, setDiagnosticRules] = useState<DiagnosticLogRule[]>([]);
+  const [diagnosticRouteIndex, setDiagnosticRouteIndex] = useState(0);
+  const [diagnosticTtlSeconds, setDiagnosticTtlSeconds] = useState('900');
+  const [diagnosticReason, setDiagnosticReason] = useState('Investigate API latency');
 
   useEffect(() => {
     const storedToken = window.localStorage.getItem('gam.admin.token');
@@ -177,6 +221,73 @@ export default function AdminReviewFlow() {
   async function loadAdminRoles() {
     const rows = await callCms<AdminRole[]>('load-admin-roles', '/api/cms/admin-roles');
     setAdminRoles(rows);
+  }
+
+  async function loadDiagnosticRules() {
+    const rows = await callCms<DiagnosticLogRule[]>(
+      'load-diagnostic-rules',
+      '/api/cms/observability/diagnostic-log-rules',
+    );
+    setDiagnosticRules(rows);
+  }
+
+  async function createDiagnosticRule() {
+    const selectedRoute = DIAGNOSTIC_ROUTE_OPTIONS[diagnosticRouteIndex];
+    const rule = await callCms<DiagnosticLogRule>(
+      'create-diagnostic-rule',
+      '/api/cms/observability/diagnostic-log-rules',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          service: 'user-api',
+          method: selectedRoute.method,
+          route: selectedRoute.route,
+          ttl_seconds: parsePositiveInt(diagnosticTtlSeconds, 900),
+          reason: diagnosticReason,
+        }),
+      },
+    );
+    setDiagnosticRules((rules) => [rule, ...rules.filter((item) => item.id !== rule.id)]);
+  }
+
+  async function toggleDiagnosticRule(rule: DiagnosticLogRule) {
+    const updated = await callCms<DiagnosticLogRule>(
+      'toggle-diagnostic-rule',
+      `/api/cms/observability/diagnostic-log-rules/${rule.id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          enabled: !rule.enabled,
+          ttl_seconds: !rule.enabled ? parsePositiveInt(diagnosticTtlSeconds, 900) : undefined,
+          reason: diagnosticReason || rule.reason,
+        }),
+      },
+    );
+    setDiagnosticRules((rules) => rules.map((item) => (item.id === updated.id ? updated : item)));
+  }
+
+  async function extendDiagnosticRule(rule: DiagnosticLogRule) {
+    const updated = await callCms<DiagnosticLogRule>(
+      'extend-diagnostic-rule',
+      `/api/cms/observability/diagnostic-log-rules/${rule.id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          ttl_seconds: parsePositiveInt(diagnosticTtlSeconds, 900),
+          reason: diagnosticReason || rule.reason,
+        }),
+      },
+    );
+    setDiagnosticRules((rules) => rules.map((item) => (item.id === updated.id ? updated : item)));
+  }
+
+  async function deleteDiagnosticRule(rule: DiagnosticLogRule) {
+    const deleted = await callCms<DiagnosticLogRule>(
+      'delete-diagnostic-rule',
+      `/api/cms/observability/diagnostic-log-rules/${rule.id}`,
+      { method: 'DELETE' },
+    );
+    setDiagnosticRules((rules) => rules.filter((item) => item.id !== deleted.id));
   }
 
   async function createAdminUser() {
@@ -507,6 +618,108 @@ export default function AdminReviewFlow() {
         </Panel>
 
         <Panel flex={1} minWidth={330} padding={18} gap={14}>
+          <XStack justifyContent="space-between" alignItems="center" gap={12}>
+            <SectionTitle>Diagnostic logs</SectionTitle>
+            <Button borderRadius={8} onPress={() => safeRun(loadDiagnosticRules)}>
+              Load rules
+            </Button>
+          </XStack>
+
+          <YStack gap={10}>
+            <Field label="user-api route">
+              <select
+                value={diagnosticRouteIndex}
+                onChange={(event) => setDiagnosticRouteIndex(Number(event.target.value))}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #c8d2cc',
+                  borderRadius: 8,
+                  color: '#20231f',
+                  fontSize: 14,
+                  padding: '10px 12px',
+                }}
+              >
+                {DIAGNOSTIC_ROUTE_OPTIONS.map((option, index) => (
+                  <option key={`${option.method}:${option.route}`} value={index}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="TTL seconds">
+              <Input
+                value={diagnosticTtlSeconds}
+                onChangeText={setDiagnosticTtlSeconds}
+                borderRadius={8}
+                keyboardType="numeric"
+              />
+            </Field>
+            <Field label="Reason">
+              <Input
+                value={diagnosticReason}
+                onChangeText={setDiagnosticReason}
+                borderRadius={8}
+                placeholder="Investigate p99 login latency"
+              />
+            </Field>
+            <Button
+              backgroundColor="#607d3c"
+              color="#ffffff"
+              borderRadius={8}
+              disabled={!diagnosticReason || busy === 'create-diagnostic-rule'}
+              onPress={() => safeRun(createDiagnosticRule)}
+            >
+              Enable selected API
+            </Button>
+            <Paragraph color="#5f6862" fontSize={13} lineHeight={18}>
+              Rules sync to user-api within about five seconds and auto-expire. Logs stay in Loki as JSON fields.
+            </Paragraph>
+          </YStack>
+
+          <YStack gap={10}>
+            {diagnosticRules.length === 0 ? (
+              <EmptyText>No diagnostic rules loaded.</EmptyText>
+            ) : (
+              diagnosticRules.map((rule) => (
+                <Panel key={rule.id} padding={12} gap={8}>
+                  <XStack justifyContent="space-between" alignItems="center" gap={8}>
+                    <YStack gap={3} flex={1}>
+                      <Text color="#20231f" fontSize={15} fontWeight="800">
+                        {rule.method} {rule.route}
+                      </Text>
+                      <Paragraph color="#5f6862" fontSize={13} lineHeight={18}>
+                        {rule.state} · expires {rule.expires_at} · {rule.reason}
+                      </Paragraph>
+                    </YStack>
+                    <StatusPill state={rule.state} />
+                  </XStack>
+                  <XStack gap={8} flexWrap="wrap">
+                    <button
+                      onClick={() => safeRun(() => toggleDiagnosticRule(rule))}
+                      style={miniButtonStyle}
+                    >
+                      {rule.enabled ? 'Disable' : 'Enable'}
+                    </button>
+                    <button
+                      onClick={() => safeRun(() => extendDiagnosticRule(rule))}
+                      style={miniButtonStyle}
+                    >
+                      Extend TTL
+                    </button>
+                    <button
+                      onClick={() => safeRun(() => deleteDiagnosticRule(rule))}
+                      style={dangerMiniButtonStyle}
+                    >
+                      Delete
+                    </button>
+                  </XStack>
+                </Panel>
+              ))
+            )}
+          </YStack>
+        </Panel>
+
+        <Panel flex={1} minWidth={330} padding={18} gap={14}>
           <Eyebrow>Live cms-api response</Eyebrow>
           <SectionTitle>{busy ? `Running ${busy}` : 'Ready'}</SectionTitle>
           <ScrollView maxHeight={500}>
@@ -628,6 +841,30 @@ function EmptyText({ children }: { children: ReactNode }) {
       {children}
     </Text>
   );
+}
+
+function StatusPill({ state }: { state: string }) {
+  const active = state === 'active';
+  const disabled = state === 'disabled';
+  return (
+    <Text
+      backgroundColor={active ? '#dfead9' : disabled ? '#eef0f0' : '#f3e3d7'}
+      borderRadius={999}
+      color={active ? '#365b23' : disabled ? '#5f6862' : '#8a4a20'}
+      fontSize={12}
+      fontWeight="800"
+      paddingHorizontal={10}
+      paddingVertical={5}
+      textTransform="uppercase"
+    >
+      {state}
+    </Text>
+  );
+}
+
+function parsePositiveInt(value: string, fallback: number) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function formatBody(text: string) {

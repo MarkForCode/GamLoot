@@ -8,6 +8,23 @@ dist/
 .expo/
 .turbo/
 target/
+**/target/
+**/node_modules/
+reports/appium/*.json
+reports/appium/*.md
+reports/k6/*.json
+apps/user/app/ios/build/
+apps/user/app/ios/Pods/
+apps/user/app/ios/xcuserdata/
+apps/user/app/ios/**/*.xcuserstate
+apps/user/app/android/build/
+apps/user/app/android/.gradle/
+apps/user/app/android/.cxx/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
 
 # Environment
 .env

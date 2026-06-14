@@ -23,7 +23,7 @@ use opentelemetry_sdk::{
 use std::{
     env,
     path::{Path, PathBuf},
-    sync::OnceLock,
+    sync::{OnceLock, RwLock},
     time::{Duration, Instant},
 };
 use tracing::{info_span, Instrument};
@@ -33,6 +33,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilte
 use uuid::Uuid;
 
 static METRICS_HANDLE: OnceLock<PrometheusHandle> = OnceLock::new();
+static DIAGNOSTIC_LOG_RULES: OnceLock<RwLock<Vec<DiagnosticLogRule>>> = OnceLock::new();
 
 const REQUEST_ID_HEADER: &str = "x-request-id";
 
@@ -212,6 +213,55 @@ pub async fn metrics() -> impl IntoResponse {
         .unwrap_or_default()
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiagnosticLogRule {
+    pub id: i32,
+    pub service: String,
+    pub method: String,
+    pub route: String,
+    pub reason: String,
+}
+
+pub fn replace_diagnostic_log_rules(rules: Vec<DiagnosticLogRule>) {
+    let normalized_rules = rules
+        .into_iter()
+        .map(|rule| DiagnosticLogRule {
+            id: rule.id,
+            service: rule.service,
+            method: rule.method.to_uppercase(),
+            route: rule.route,
+            reason: rule.reason,
+        })
+        .collect::<Vec<_>>();
+
+    match diagnostic_log_rules_store().write() {
+        Ok(mut store) => *store = normalized_rules,
+        Err(error) => {
+            tracing::warn!(
+                error = %error,
+                "failed to update diagnostic log rules"
+            );
+        },
+    }
+}
+
+fn diagnostic_log_rules_store() -> &'static RwLock<Vec<DiagnosticLogRule>> {
+    DIAGNOSTIC_LOG_RULES.get_or_init(|| RwLock::new(Vec::new()))
+}
+
+fn match_diagnostic_log_rule(
+    service: &str,
+    method: &str,
+    route: &str,
+) -> Option<DiagnosticLogRule> {
+    let method = method.to_uppercase();
+    let store = diagnostic_log_rules_store().read().ok()?;
+    store
+        .iter()
+        .find(|rule| rule.service == service && rule.method == method && rule.route == route)
+        .cloned()
+}
+
 pub async fn track_http_request(req: Request<Body>, next: Next) -> Response {
     let start = Instant::now();
     let method = req.method().clone();
@@ -235,6 +285,7 @@ pub async fn track_http_request(req: Request<Body>, next: Next) -> Response {
         trace_id = tracing::field::Empty,
         span_id = tracing::field::Empty,
     );
+    let diagnostic_rule = match_diagnostic_log_rule(&service, method.as_str(), &route);
 
     gauge!(
         "http_server_active_requests",
@@ -246,6 +297,19 @@ pub async fn track_http_request(req: Request<Body>, next: Next) -> Response {
 
     let instrument_span = span.clone();
     let response = async {
+        if let Some(rule) = diagnostic_rule.as_ref() {
+            tracing::info!(
+                event_type = "api.diagnostic.start",
+                service = %service,
+                request_id = %request_id,
+                method = %method,
+                route = %route,
+                matched_rule_id = rule.id,
+                diagnostic_reason = %rule.reason,
+                "api diagnostic request started"
+            );
+        }
+
         let mut response = next.run(req).await;
         let status = response.status();
         let elapsed = start.elapsed();
@@ -304,6 +368,21 @@ pub async fn track_http_request(req: Request<Body>, next: Next) -> Response {
             "http request completed"
         );
 
+        if let Some(rule) = diagnostic_rule.as_ref() {
+            tracing::info!(
+                event_type = "api.diagnostic.finish",
+                service = %service,
+                request_id = %request_id,
+                method = %method,
+                route = %route,
+                status = status.as_u16(),
+                latency_ms,
+                matched_rule_id = rule.id,
+                diagnostic_reason = %rule.reason,
+                "api diagnostic request finished"
+            );
+        }
+
         response
     }
     .instrument(instrument_span)
@@ -340,4 +419,28 @@ fn looks_dynamic(segment: &str) -> bool {
     segment.parse::<i64>().is_ok()
         || Uuid::parse_str(segment).is_ok()
         || (segment.chars().any(|ch| ch.is_ascii_digit()) && segment.len() > 8)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{match_diagnostic_log_rule, replace_diagnostic_log_rules, DiagnosticLogRule};
+
+    #[test]
+    fn diagnostic_rules_match_normalized_method_and_exact_route() {
+        replace_diagnostic_log_rules(vec![DiagnosticLogRule {
+            id: 42,
+            service: "user-api".to_owned(),
+            method: "post".to_owned(),
+            route: "/auth/login".to_owned(),
+            reason: "debug login latency".to_owned(),
+        }]);
+
+        let rule = match_diagnostic_log_rule("user-api", "POST", "/auth/login")
+            .expect("expected diagnostic rule to match");
+
+        assert_eq!(rule.id, 42);
+        assert_eq!(rule.reason, "debug login latency");
+        assert!(match_diagnostic_log_rule("user-api", "POST", "/health").is_none());
+        assert!(match_diagnostic_log_rule("cms-api", "POST", "/auth/login").is_none());
+    }
 }

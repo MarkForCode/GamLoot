@@ -5,6 +5,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "codegen": "specta gen",
     "test": "vitest run",
     "test:watch": "vitest"

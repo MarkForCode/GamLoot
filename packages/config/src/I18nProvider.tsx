@@ -1,14 +1,16 @@
 'use client';
 
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
-import { useLocale } from 'next-intl/hooks';
+import type { AbstractIntlMessages } from 'next-intl';
+import type { ReactNode } from 'react';
 
-export async function I18nProvider({ children }: { children: React.ReactNode }) {
-  const locale = useLocale();
+type I18nProviderProps = {
+  children: ReactNode;
+  locale: string;
+  messages: AbstractIntlMessages;
+};
 
-  const messages = await getMessages();
-
+export function I18nProvider({ children, locale, messages }: I18nProviderProps) {
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       {children}

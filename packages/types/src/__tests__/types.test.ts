@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { User, Product, Order } from '../src';
+import type { User, Product, Order } from '..';
 
 describe('types', () => {
   it('exports User type', () => {

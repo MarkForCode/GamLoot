@@ -5,11 +5,17 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "dev:rust": "cargo watch -x run",
     "build:rust": "cargo build --release",
+    "load:k6": "scripts/k6/run-local.sh",
+    "load:k6:smoke": "K6_PROFILE=smoke scripts/k6/run-local.sh",
+    "load:k6:stress": "K6_PROFILE=stress scripts/k6/run-local.sh",
+    "load:k6:docker": "scripts/k6/run-docker.sh",
     "smoke:appium:login": "node scripts/smoke-appium-login.mjs",
     "smoke:appium:user-app": "node scripts/smoke-appium-user-app.mjs",
+    "smoke:appium:ios-user-app": "node scripts/smoke-appium-ios-user-app.mjs",
     "smoke:user-app:visible": "node scripts/smoke-user-app-web.mjs"
   },
   "devDependencies": {
@@ -18,7 +24,8 @@
     "appium": "^2.17.1",
     "eslint": "^8.57.0",
     "turbo": "^2.0.0",
-    "webdriverio": "^9.16.0"
+    "webdriverio": "^9.16.0",
+    "ws": "^8.20.0"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
