@@ -143,6 +143,24 @@ just ios-env-check
 just ios-simulator-start
 ```
 
+## AI PR Review
+
+Every same-repository pull request gets a non-blocking AI code review comment through `.github/workflows/ai-code-review.yml`. The workflow reviews the changed diff only, skips fork PRs, and updates one sticky PR comment instead of creating inline comments or blocking merges.
+
+Required GitHub repository secret:
+
+```text
+OPENAI_API_KEY
+```
+
+Optional GitHub repository variable:
+
+```text
+OPENAI_MODEL=gpt-4.1-mini
+```
+
+The review script is `scripts/ai-code-review.mjs`. It redacts common secrets before sending the diff to the OpenAI Responses API, skips generated/binary/sensitive files, summarizes lockfiles, and writes advisory findings in Traditional Chinese. This workflow is independent from Loki, Tempo, and the application observability pipeline.
+
 ## Load Testing
 
 k6 scenarios live in `tests/k6/`. Reports are written to `reports/k6/`.

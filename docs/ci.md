@@ -1,12 +1,13 @@
 # CI/CD Workflows
 
-本專案目前有三條 GitHub Actions workflow：一般程式碼 CI、LocalStack Terraform 驗證、以及真 AWS Terraform OIDC 部署流程。
+本專案目前有四條 GitHub Actions workflow：一般程式碼 CI、AI PR code review、LocalStack Terraform 驗證、以及真 AWS Terraform OIDC 部署流程。
 
 ## Workflow Overview
 
 | Workflow | File | Trigger | Purpose |
 | --- | --- | --- | --- |
 | CI | `.github/workflows/ci.yml` | PR / push to `main`, `develop`; manual | Node 與 Rust 的 lint/test gate |
+| AI Code Review | `.github/workflows/ai-code-review.yml` | 同 repo PR opened / synchronize / reopened / ready_for_review | 非阻擋式 AI code review sticky comment |
 | Terraform LocalStack | `.github/workflows/terraform-localstack.yml` | manual only | 用 LocalStack 驗證 Terraform AWS 子集與 Terratest |
 | Terraform AWS | `.github/workflows/terraform-aws.yml` | Terraform 相關 PR / push to `main`, `develop`; manual | 真 AWS Terraform validate/plan/apply，透過 GitHub OIDC assume role |
 
@@ -33,6 +34,36 @@
   - 保留給未來啟用 user-web Appium smoke test。
 
 Concurrency 使用 `ci-${{ github.ref }}`，同一個 ref 的新 run 會取消舊 run。
+
+## AI Code Review
+
+`AI Code Review` 會在同 repo PR 更新時產生一則 advisory review comment。它使用 `pull_request` event，不使用 `pull_request_target`；fork PR 會略過，避免 secret 暴露給不受信任的 PR 內容。
+
+它會：
+
+- 使用 Node.js 22 執行 `scripts/ai-code-review.mjs`。
+- Checkout base SHA 的可信腳本，再 fetch PR head 只用來產生 diff。
+- 讀取 `OPENAI_API_KEY` repository secret。
+- 讀取 optional `OPENAI_MODEL` repository variable，未設定時使用 `gpt-4.1-mini`。
+- 只送 changed diff 和少量 metadata，不送整個 repo。
+- 略過 generated、binary、sensitive path，lockfile 只摘要。
+- 用 `<!-- gam-ai-code-review -->` marker 更新同一則 PR comment。
+- OpenAI 或 comment API 暫時失敗時寫 workflow summary 並保持 success，不阻擋 merge。
+
+本機可做 syntax check：
+
+```bash
+node --check scripts/ai-code-review.mjs
+```
+
+若要只檢查 prompt/diff 組裝、不呼叫 OpenAI 或 GitHub comment API：
+
+```bash
+AI_REVIEW_DRY_RUN=1 \
+BASE_SHA=HEAD~1 \
+HEAD_SHA=HEAD \
+node scripts/ai-code-review.mjs
+```
 
 ## Terraform LocalStack
 
