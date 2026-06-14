@@ -11,6 +11,7 @@ All primary dev commands go through `just`. Run `just` alone to list all targets
 ```bash
 just install          # Install all dependencies (pnpm)
 just docker-up        # Start full stack (postgres, redis, APIs, workers, frontends)
+just docker-up-backend  # Backend only (postgres, redis, APIs, workers — no frontends)
 just dev              # All frontend apps (Turborepo)
 just dev-web          # Next.js user web only
 just dev-app          # Expo mobile only
@@ -49,6 +50,7 @@ cd rust && cargo test --all
 
 ```bash
 just lint             # All packages via Turborepo
+just typecheck        # TypeScript type-check all packages
 # Single package:
 pnpm --filter @gam/user-web lint
 pnpm --filter @gam/admin-web lint
@@ -65,6 +67,12 @@ just db-apply-migrations   # Apply migrations to running Docker Postgres
 ```
 
 Migrations live in `rust/infrastructure/db/migrations/`.
+
+### Pre-PR Verification
+
+```bash
+just check-all        # validate-migrations + check-rust + check-user-web + check-admin-web
+```
 
 ### Testing
 
@@ -89,6 +97,21 @@ just obs-up               # Start Grafana/Loki/Mimir/Prometheus/Tempo/Alloy/Flue
 just obs-smoke            # Smoke check observability stack
 just obs-down             # Stop observability stack
 ```
+
+Local observability ports (started separately from the main stack):
+
+| Service    | Port  | URL                        |
+|------------|-------|----------------------------|
+| Grafana    | 3002  | http://localhost:3002 (admin/admin) |
+| Loki       | 3100  | http://localhost:3100      |
+| Tempo      | 3200  | http://localhost:3200      |
+| Mimir      | 9009  | http://localhost:9009      |
+| Prometheus | 9090  | http://localhost:9090      |
+| Alloy      | 12345 | http://localhost:12345     |
+
+Grafana uses port 3002 because 3000/3001 are taken by user-web/admin-web.
+
+**Loki label constraint**: Only use low-cardinality labels (`service`, `env`, `level`, `cluster`). Never promote request IDs, trace IDs, user IDs, or URL paths to Loki labels.
 
 ### Terraform / Infrastructure
 
@@ -184,3 +207,8 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
 Copy `.env.example` to `.env` to get started.
+
+### Git Conventions
+
+- Branch prefixes: `feature/`, `fix/`, `refactor/`
+- Commit messages: imperative mood (e.g., `add user login`, `fix order worker crash`)
