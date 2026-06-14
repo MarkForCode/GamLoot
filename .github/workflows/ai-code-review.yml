@@ -53,6 +53,16 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: Verify OPENAI_API_KEY
+        if: ${{ steps.review_script.outputs.available == 'true' }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::OPENAI_API_KEY secret is not set. Add it to the repository secrets to enable AI code review."
+            exit 1
+          fi
+
       - name: Setup Node.js
         if: ${{ steps.review_script.outputs.available == 'true' }}
         uses: actions/setup-node@v4
