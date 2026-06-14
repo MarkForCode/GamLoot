@@ -9,7 +9,7 @@ use axum::{
 use gam_observability::{metrics, track_http_request, ObservabilityConfig};
 use sea_orm::{
     ConnectionTrait, Database, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr,
-    Statement, TransactionTrait,
+    QueryResult, Statement, TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
 use std::{env, net::SocketAddr, sync::Arc};
@@ -66,10 +66,21 @@ fn app(db: DatabaseConnection) -> Router {
             "/admin-users/:admin_user_id/reset-password",
             post(reset_admin_user_password),
         )
-        .route("/admin-roles", get(list_admin_roles).post(create_admin_role))
+        .route(
+            "/admin-roles",
+            get(list_admin_roles).post(create_admin_role),
+        )
         .route(
             "/admin-roles/:role_id/permissions",
             patch(update_admin_role_permissions),
+        )
+        .route(
+            "/observability/diagnostic-log-rules",
+            get(list_diagnostic_log_rules).post(create_diagnostic_log_rule),
+        )
+        .route(
+            "/observability/diagnostic-log-rules/:rule_id",
+            patch(update_diagnostic_log_rule).delete(delete_diagnostic_log_rule),
         )
         .route("/trial-requests", get(list_trial_requests))
         .route("/trial-requests/:id/approve", post(approve_trial_request))
@@ -184,6 +195,37 @@ struct AdminRoleSummary {
     name: String,
     description: Option<String>,
     permissions: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct DiagnosticLogRuleSummary {
+    id: i32,
+    service: String,
+    method: String,
+    route: String,
+    enabled: bool,
+    expires_at: String,
+    reason: String,
+    created_by_admin_user_id: Option<i32>,
+    created_at: String,
+    updated_at: String,
+    state: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct CreateDiagnosticLogRuleRequest {
+    service: String,
+    method: String,
+    route: String,
+    ttl_seconds: Option<i32>,
+    reason: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct UpdateDiagnosticLogRuleRequest {
+    enabled: Option<bool>,
+    ttl_seconds: Option<i32>,
+    reason: Option<String>,
 }
 
 async fn admin_login(
@@ -687,8 +729,7 @@ async fn update_admin_role_permissions(
     Path(role_id): Path<i32>,
     Json(payload): Json<UpdateAdminRolePermissionsRequest>,
 ) -> Result<Json<AdminRoleSummary>, ApiError> {
-    let actor =
-        require_admin_permission(state.db.as_ref(), &headers, "admin_role.manage").await?;
+    let actor = require_admin_permission(state.db.as_ref(), &headers, "admin_role.manage").await?;
 
     let role = state
         .db
@@ -742,6 +783,267 @@ async fn update_admin_role_permissions(
         description: role.try_get("", "description")?,
         permissions,
     }))
+}
+
+async fn list_diagnostic_log_rules(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<DiagnosticLogRuleSummary>>, ApiError> {
+    require_admin_permission(state.db.as_ref(), &headers, DIAGNOSTIC_LOG_PERMISSION).await?;
+
+    let rows = state
+        .db
+        .query_all(Statement::from_string(
+            DbBackend::Postgres,
+            diagnostic_log_rule_select_sql(
+                r#"
+                SELECT
+                    id,
+                    service,
+                    method,
+                    route,
+                    enabled,
+                    expires_at::text AS expires_at,
+                    reason,
+                    created_by_admin_user_id,
+                    created_at::text AS created_at,
+                    updated_at::text AS updated_at,
+                    CASE
+                        WHEN enabled = false THEN 'disabled'
+                        WHEN expires_at <= CURRENT_TIMESTAMP THEN 'expired'
+                        ELSE 'active'
+                    END AS state
+                FROM api_diagnostic_log_rules
+                ORDER BY enabled DESC, expires_at DESC, id DESC
+                "#,
+            ),
+        ))
+        .await?;
+
+    let rules = rows
+        .into_iter()
+        .map(diagnostic_log_rule_from_row)
+        .collect::<Result<Vec<_>, DbErr>>()?;
+
+    Ok(Json(rules))
+}
+
+async fn create_diagnostic_log_rule(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(payload): Json<CreateDiagnosticLogRuleRequest>,
+) -> Result<(StatusCode, Json<DiagnosticLogRuleSummary>), ApiError> {
+    let actor =
+        require_admin_permission(state.db.as_ref(), &headers, DIAGNOSTIC_LOG_PERMISSION).await?;
+    let service = validate_diagnostic_service(&payload.service)?;
+    let method = validate_diagnostic_method(&payload.method)?;
+    let route = validate_diagnostic_route(&payload.route)?;
+    let ttl_seconds = validate_diagnostic_ttl(payload.ttl_seconds)?;
+    let reason = validate_diagnostic_reason(&payload.reason)?;
+
+    let row = state
+        .db
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            diagnostic_log_rule_select_sql(
+                r#"
+                INSERT INTO api_diagnostic_log_rules (
+                    service,
+                    method,
+                    route,
+                    enabled,
+                    expires_at,
+                    reason,
+                    created_by_admin_user_id
+                )
+                VALUES (
+                    $1,
+                    $2,
+                    $3,
+                    true,
+                    CURRENT_TIMESTAMP + ($4::integer * interval '1 second'),
+                    $5,
+                    $6
+                )
+                ON CONFLICT (service, method, route)
+                DO UPDATE SET
+                    enabled = true,
+                    expires_at = EXCLUDED.expires_at,
+                    reason = EXCLUDED.reason,
+                    created_by_admin_user_id = EXCLUDED.created_by_admin_user_id,
+                    updated_at = CURRENT_TIMESTAMP
+                RETURNING
+                    id,
+                    service,
+                    method,
+                    route,
+                    enabled,
+                    expires_at::text AS expires_at,
+                    reason,
+                    created_by_admin_user_id,
+                    created_at::text AS created_at,
+                    updated_at::text AS updated_at,
+                    CASE
+                        WHEN enabled = false THEN 'disabled'
+                        WHEN expires_at <= CURRENT_TIMESTAMP THEN 'expired'
+                        ELSE 'active'
+                    END AS state
+                "#,
+            ),
+            vec![
+                service.into(),
+                method.into(),
+                route.into(),
+                ttl_seconds.into(),
+                reason.clone().into(),
+                actor.id.into(),
+            ],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::internal("diagnostic log rule upsert returned no row"))?;
+    let rule = diagnostic_log_rule_from_row(row)?;
+    record_diagnostic_rule_admin_change(
+        state.db.as_ref(),
+        actor.id,
+        "observability.diagnostic_log.upsert",
+        rule.id,
+        reason,
+    )
+    .await?;
+
+    Ok((StatusCode::CREATED, Json(rule)))
+}
+
+async fn update_diagnostic_log_rule(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(rule_id): Path<i32>,
+    Json(payload): Json<UpdateDiagnosticLogRuleRequest>,
+) -> Result<Json<DiagnosticLogRuleSummary>, ApiError> {
+    let actor =
+        require_admin_permission(state.db.as_ref(), &headers, DIAGNOSTIC_LOG_PERMISSION).await?;
+
+    if payload.enabled.is_none() && payload.ttl_seconds.is_none() && payload.reason.is_none() {
+        return Err(ApiError::bad_request(
+            "at least one of enabled, ttl_seconds, or reason is required",
+        ));
+    }
+
+    let reason = match payload.reason.as_deref() {
+        Some(value) => Some(validate_diagnostic_reason(value)?),
+        None => None,
+    };
+    let ttl_seconds = match (payload.ttl_seconds, payload.enabled) {
+        (Some(value), _) => Some(validate_diagnostic_ttl(Some(value))?),
+        (None, Some(true)) => Some(validate_diagnostic_ttl(None)?),
+        (None, _) => None,
+    };
+
+    let row = state
+        .db
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            diagnostic_log_rule_select_sql(
+                r#"
+                UPDATE api_diagnostic_log_rules
+                SET
+                    enabled = COALESCE($2::boolean, enabled),
+                    reason = COALESCE($3::text, reason),
+                    expires_at = CASE
+                        WHEN $4::integer IS NULL THEN expires_at
+                        ELSE CURRENT_TIMESTAMP + ($4::integer * interval '1 second')
+                    END,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+                RETURNING
+                    id,
+                    service,
+                    method,
+                    route,
+                    enabled,
+                    expires_at::text AS expires_at,
+                    reason,
+                    created_by_admin_user_id,
+                    created_at::text AS created_at,
+                    updated_at::text AS updated_at,
+                    CASE
+                        WHEN enabled = false THEN 'disabled'
+                        WHEN expires_at <= CURRENT_TIMESTAMP THEN 'expired'
+                        ELSE 'active'
+                    END AS state
+                "#,
+            ),
+            vec![
+                rule_id.into(),
+                payload.enabled.into(),
+                reason.clone().into(),
+                ttl_seconds.into(),
+            ],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::not_found("diagnostic log rule not found"))?;
+    let rule = diagnostic_log_rule_from_row(row)?;
+    record_diagnostic_rule_admin_change(
+        state.db.as_ref(),
+        actor.id,
+        "observability.diagnostic_log.update",
+        rule.id,
+        reason.unwrap_or_else(|| "diagnostic log rule updated".to_owned()),
+    )
+    .await?;
+
+    Ok(Json(rule))
+}
+
+async fn delete_diagnostic_log_rule(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(rule_id): Path<i32>,
+) -> Result<Json<DiagnosticLogRuleSummary>, ApiError> {
+    let actor =
+        require_admin_permission(state.db.as_ref(), &headers, DIAGNOSTIC_LOG_PERMISSION).await?;
+
+    let row = state
+        .db
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            diagnostic_log_rule_select_sql(
+                r#"
+                DELETE FROM api_diagnostic_log_rules
+                WHERE id = $1
+                RETURNING
+                    id,
+                    service,
+                    method,
+                    route,
+                    enabled,
+                    expires_at::text AS expires_at,
+                    reason,
+                    created_by_admin_user_id,
+                    created_at::text AS created_at,
+                    updated_at::text AS updated_at,
+                    CASE
+                        WHEN enabled = false THEN 'disabled'
+                        WHEN expires_at <= CURRENT_TIMESTAMP THEN 'expired'
+                        ELSE 'active'
+                    END AS state
+                "#,
+            ),
+            vec![rule_id.into()],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::not_found("diagnostic log rule not found"))?;
+    let rule = diagnostic_log_rule_from_row(row)?;
+    record_diagnostic_rule_admin_change(
+        state.db.as_ref(),
+        actor.id,
+        "observability.diagnostic_log.delete",
+        rule.id,
+        "diagnostic log rule deleted".to_owned(),
+    )
+    .await?;
+
+    Ok(Json(rule))
 }
 
 #[derive(Debug, Serialize)]
@@ -2737,6 +3039,117 @@ where
             "admin_user.audit".to_owned().into(),
         ],
     ))
+    .await?;
+
+    Ok(())
+}
+
+const DIAGNOSTIC_LOG_PERMISSION: &str = "observability.diagnostic_log.manage";
+const DIAGNOSTIC_LOG_DEFAULT_TTL_SECONDS: i32 = 900;
+const DIAGNOSTIC_LOG_MAX_TTL_SECONDS: i32 = 3600;
+
+fn diagnostic_log_rule_select_sql(sql: &str) -> String {
+    sql.to_owned()
+}
+
+fn diagnostic_log_rule_from_row(row: QueryResult) -> Result<DiagnosticLogRuleSummary, DbErr> {
+    Ok(DiagnosticLogRuleSummary {
+        id: row.try_get("", "id")?,
+        service: row.try_get("", "service")?,
+        method: row.try_get("", "method")?,
+        route: row.try_get("", "route")?,
+        enabled: row.try_get("", "enabled")?,
+        expires_at: row.try_get("", "expires_at")?,
+        reason: row.try_get("", "reason")?,
+        created_by_admin_user_id: row.try_get("", "created_by_admin_user_id")?,
+        created_at: row.try_get("", "created_at")?,
+        updated_at: row.try_get("", "updated_at")?,
+        state: row.try_get("", "state")?,
+    })
+}
+
+fn validate_diagnostic_service(value: &str) -> Result<String, ApiError> {
+    let service = value.trim();
+    validate_required(service, "service")?;
+    if service != "user-api" {
+        return Err(ApiError::bad_request("service must be user-api in v1"));
+    }
+    Ok(service.to_owned())
+}
+
+fn validate_diagnostic_method(value: &str) -> Result<String, ApiError> {
+    let method = value.trim().to_uppercase();
+    validate_required(&method, "method")?;
+    match method.as_str() {
+        "GET" | "POST" | "PUT" | "PATCH" | "DELETE" => Ok(method),
+        _ => Err(ApiError::bad_request(
+            "method must be GET, POST, PUT, PATCH, or DELETE",
+        )),
+    }
+}
+
+fn validate_diagnostic_route(value: &str) -> Result<String, ApiError> {
+    let route = value.trim();
+    validate_required(route, "route")?;
+    if !route.starts_with('/') {
+        return Err(ApiError::bad_request("route must start with /"));
+    }
+    if route.contains('?') || route.contains('#') || route.chars().any(char::is_whitespace) {
+        return Err(ApiError::bad_request(
+            "route must be a normalized Axum route without query string or whitespace",
+        ));
+    }
+    Ok(route.to_owned())
+}
+
+fn validate_diagnostic_ttl(value: Option<i32>) -> Result<i32, ApiError> {
+    let ttl = value.unwrap_or(DIAGNOSTIC_LOG_DEFAULT_TTL_SECONDS);
+    if !(1..=DIAGNOSTIC_LOG_MAX_TTL_SECONDS).contains(&ttl) {
+        return Err(ApiError::bad_request(format!(
+            "ttl_seconds must be between 1 and {DIAGNOSTIC_LOG_MAX_TTL_SECONDS}"
+        )));
+    }
+    Ok(ttl)
+}
+
+fn validate_diagnostic_reason(value: &str) -> Result<String, ApiError> {
+    let reason = value.trim();
+    validate_required(reason, "reason")?;
+    Ok(reason.to_owned())
+}
+
+async fn record_diagnostic_rule_admin_change<C>(
+    db: &C,
+    actor_admin_user_id: i32,
+    action: &str,
+    rule_id: i32,
+    reason: String,
+) -> Result<(), ApiError>
+where
+    C: ConnectionTrait,
+{
+    insert_admin_action(
+        db,
+        None,
+        None,
+        LEGACY_PLATFORM_ACTOR_USER_ID,
+        Some(actor_admin_user_id),
+        action,
+        "api_diagnostic_log_rule",
+        rule_id.to_string(),
+        reason,
+    )
+    .await?;
+    insert_audit_log(
+        db,
+        None,
+        None,
+        LEGACY_PLATFORM_ACTOR_USER_ID,
+        Some(actor_admin_user_id),
+        action,
+        "api_diagnostic_log_rule",
+        rule_id.to_string(),
+    )
     .await?;
 
     Ok(())

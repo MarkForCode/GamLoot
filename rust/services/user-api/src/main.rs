@@ -6,13 +6,16 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use gam_observability::{metrics, track_http_request, ObservabilityConfig};
+use gam_observability::{
+    metrics, replace_diagnostic_log_rules, track_http_request, DiagnosticLogRule,
+    ObservabilityConfig,
+};
 use sea_orm::{
     ConnectionTrait, Database, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr,
     Statement, TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
-use std::{env, net::SocketAddr, sync::Arc};
+use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -33,6 +36,7 @@ async fn main() {
     let db = Database::connect(database_url)
         .await
         .expect("failed to connect to database");
+    spawn_diagnostic_log_rule_sync(db.clone());
 
     let app = app(db);
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
@@ -137,6 +141,55 @@ fn app(db: DatabaseConnection) -> Router {
 
 async fn health() -> &'static str {
     "OK"
+}
+
+fn spawn_diagnostic_log_rule_sync(db: DatabaseConnection) {
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(Duration::from_secs(5));
+
+        loop {
+            interval.tick().await;
+            if let Err(error) = sync_diagnostic_log_rules(&db).await {
+                tracing::warn!(
+                    error = %error,
+                    "failed to sync diagnostic log rules"
+                );
+            }
+        }
+    });
+}
+
+async fn sync_diagnostic_log_rules(db: &DatabaseConnection) -> Result<(), DbErr> {
+    let rows = db
+        .query_all(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            SELECT id, service, method, route, reason
+            FROM api_diagnostic_log_rules
+            WHERE service = 'user-api'
+              AND enabled = true
+              AND expires_at > CURRENT_TIMESTAMP
+            ORDER BY id
+            "#,
+            vec![],
+        ))
+        .await?;
+
+    let rules = rows
+        .into_iter()
+        .map(|row| {
+            Ok(DiagnosticLogRule {
+                id: row.try_get("", "id")?,
+                service: row.try_get("", "service")?,
+                method: row.try_get("", "method")?,
+                route: row.try_get("", "route")?,
+                reason: row.try_get("", "reason")?,
+            })
+        })
+        .collect::<Result<Vec<_>, DbErr>>()?;
+
+    replace_diagnostic_log_rules(rules);
+    Ok(())
 }
 
 #[derive(Debug, Deserialize)]

@@ -64,6 +64,25 @@ Query Loki directly:
 curl -fsS 'http://localhost:3100/loki/api/v1/query_range?query={service="user-api"}&limit=5'
 ```
 
+### Loki-only API Diagnostics
+
+Runtime API diagnostics use Loki structured logs, not Tempo or X-Ray traces. CMS admins can enable a short-lived rule for one `user-api` `method + route`; the service syncs active rules from the database about every five seconds.
+
+When a request matches a rule, the API emits two extra JSON log events:
+
+- `event_type="api.diagnostic.start"`
+- `event_type="api.diagnostic.finish"`
+
+Both events include `service`, `method`, `route`, `request_id`, `matched_rule_id`, and `diagnostic_reason`. The finish event also includes `status` and `latency_ms`.
+
+Example query:
+
+```logql
+{service="user-api"} | json | event_type="api.diagnostic.finish"
+```
+
+Keep these rules narrow and short-lived. The default TTL is 15 minutes and the maximum is 60 minutes. Diagnostic logs must not include request bodies, passwords, tokens, raw emails, usernames, or user IDs.
+
 ## Traces
 
 Traces stay on the existing local OTLP path:
