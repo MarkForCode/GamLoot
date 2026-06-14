@@ -4,7 +4,8 @@
   "private": true,
   "main": "./src/index.ts",
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@repo/api-client": "workspace:*",

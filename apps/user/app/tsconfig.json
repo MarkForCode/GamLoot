@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["App.tsx"],
+  "exclude": ["android", "ios", "node_modules", "dist", "build"]
+}

@@ -11,5 +11,8 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint'],
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'error',
+  },
   ignorePatterns: ['dist/', '.next/', 'node_modules/'],
 };

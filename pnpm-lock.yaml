@@ -100,6 +100,9 @@ importers:
       '@babel/core':
         specifier: ^7.25.0
         version: 7.29.0
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.28
       typescript:
         specifier: ~5.3.0
         version: 5.3.3
@@ -169,6 +172,9 @@ importers:
         specifier: ^3.26.0
         version: 3.26.5(next@15.5.15(react-dom@19.2.5(react@18.3.1))(react@18.3.1))(react@18.3.1)
     devDependencies:
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.28
       typescript:
         specifier: ~5.3.0
         version: 5.3.3
@@ -1155,7 +1161,7 @@ packages:
 
   '@expo/bunyan@4.0.1':
     resolution: {integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==}
-    engines: {'0': node >=0.10.0}
+    engines: {node: '>=0.10.0'}
 
   '@expo/cli@0.22.28':
     resolution: {integrity: sha512-lvt72KNitGuixYD2l3SZmRKVu2G4zJpmg5V7WfUBNpmUU5oODBw/6qmiJ6kSLAlfDozscUk+BBGknBBzxUrwrA==}

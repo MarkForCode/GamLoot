@@ -267,7 +267,7 @@ k6-docker:
 
 # Type check
 typecheck:
-    ./scripts/pnpm.sh run --filter=* typecheck || echo "No typecheck command in turbo pipeline"
+    ./scripts/pnpm.sh typecheck
 
 # Web tests
 smoke-health:

@@ -117,12 +117,17 @@ docs/                  product, CI, and infrastructure docs
 
 ```bash
 just test
+just typecheck
 just check-rust
 just check-user-web
 just check-admin-web
 just check-all
 just smoke
 ```
+
+## TypeScript Policy
+
+TypeScript workspaces run a strict type gate in CI. Source code must not use explicit `any`; use `unknown` plus narrowing, or define a named type/interface/generic for flexible data. The Node CI runs both `pnpm lint` and `pnpm typecheck`.
 
 Web/App smoke flows:
 

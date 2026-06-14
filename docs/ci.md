@@ -21,6 +21,7 @@
   - 使用 Node.js 22 與 pnpm。
   - 執行 `pnpm install --frozen-lockfile`。
   - 執行 `pnpm lint`。
+  - 執行 `pnpm typecheck`，強制 TypeScript strict gate。
   - 執行 `pnpm test`。
   - 永遠嘗試上傳 `coverage/` 與 `test-results/` artifact。
 - `rust-ci`
@@ -163,6 +164,7 @@ terraform output github_actions_role_arn
 # Node CI equivalent
 pnpm install --frozen-lockfile
 pnpm lint
+pnpm typecheck
 pnpm test
 
 # Rust CI equivalent
