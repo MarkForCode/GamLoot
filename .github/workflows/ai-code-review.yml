@@ -38,12 +38,29 @@ jobs:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: git fetch --no-tags origin "+refs/heads/${HEAD_REF}:refs/remotes/origin/ai-review-head"
 
+      - name: Check trusted review script
+        id: review-script
+        run: |
+          if [ -f scripts/ai-code-review.mjs ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "## AI Code Review"
+              echo
+              echo "Skipped because trusted base does not contain \`scripts/ai-code-review.mjs\` yet."
+              echo "This avoids running pull request code with \`OPENAI_API_KEY\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Setup Node.js
+        if: ${{ steps.review-script.outputs.available == 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Run AI code review
+        if: ${{ steps.review-script.outputs.available == 'true' }}
         continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
