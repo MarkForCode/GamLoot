@@ -102,6 +102,7 @@ node scripts/ai-code-review.mjs
   - push 到 `develop` 時 target `dev`。
   - push 到 `main` 時 target `prod`。
   - manual `workflow_dispatch` 可選 `dev`、`staging`、`prod`。
+  - 若 target GitHub environment 尚未設定 `AWS_TERRAFORM_ROLE_ARN`，自動 plan 會寫 summary 後略過；manual apply 會失敗。
   - 透過 GitHub OIDC 與 `aws-actions/configure-aws-credentials@v4` assume AWS IAM role。
   - 執行 remote backend init、workspace select/new、`terraform plan`。
   - 上傳 `tfplan` artifact。
@@ -187,7 +188,8 @@ just tf-localstack-test
 
 - `Terraform AWS` 的 PR 只跑 validate，不會建立 AWS credentials；這是預期行為。
 - 第一次 bootstrap 在 `terraform init` 失敗且看到 `No valid credential sources found` 時，先用 `aws sso login --profile <profile-name>` 登入，設定 `AWS_PROFILE`，再用 `terraform init -backend-config=backend.hcl -reconfigure` 重試。
-- `Terraform AWS` 的 push/manual plan 若在 configure credentials 失敗，先檢查 GitHub environment 是否有正確的 `AWS_TERRAFORM_ROLE_ARN`。
+- `Terraform AWS` 的 push/manual plan 若顯示略過，先檢查 target GitHub environment 是否有正確的 `AWS_TERRAFORM_ROLE_ARN` variable 或 secret。
+- `Terraform AWS` 若在 configure credentials 失敗但 `AWS_TERRAFORM_ROLE_ARN` 已設定，檢查 role ARN、GitHub OIDC trust policy、branch/environment 是否對得上。
 - 若 OIDC assume role 失敗，確認 workflow 來源分支是 `main` 或 `develop`，且 IAM trust policy 的 repository 是 `MarkForCode/GamLoot`。
 - 若 Terraform plan 缺少變數，確認 target GitHub environment 有 `DB_PASSWORD` 與 `CERTIFICATE_ARN` secrets。
 - `Terraform LocalStack` 只使用 fake AWS credentials；不要把 `AWS_ACCESS_KEY_ID=test` 或 `AWS_SECRET_ACCESS_KEY=test` 複製到真 AWS workflow。
