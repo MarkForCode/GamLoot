@@ -39,7 +39,7 @@ jobs:
         run: git fetch --no-tags origin "+refs/heads/${HEAD_REF}:refs/remotes/origin/ai-review-head"
 
       - name: Check trusted review script
-        id: review-script
+        id: review_script
         run: |
           if [ -f scripts/ai-code-review.mjs ]; then
             echo "available=true" >> "$GITHUB_OUTPUT"
@@ -54,13 +54,13 @@ jobs:
           fi
 
       - name: Setup Node.js
-        if: ${{ steps.review-script.outputs.available == 'true' }}
+        if: ${{ steps.review_script.outputs.available == 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Run AI code review
-        if: ${{ steps.review-script.outputs.available == 'true' }}
+        if: ${{ steps.review_script.outputs.available == 'true' }}
         continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
