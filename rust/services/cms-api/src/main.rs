@@ -66,7 +66,11 @@ fn app(db: DatabaseConnection) -> Router {
             "/admin-users/:admin_user_id/reset-password",
             post(reset_admin_user_password),
         )
-        .route("/admin-roles", get(list_admin_roles))
+        .route("/admin-roles", get(list_admin_roles).post(create_admin_role))
+        .route(
+            "/admin-roles/:role_id/permissions",
+            patch(update_admin_role_permissions),
+        )
         .route("/trial-requests", get(list_trial_requests))
         .route("/trial-requests/:id/approve", post(approve_trial_request))
         .route("/tenants/:tenant_id/guilds", get(list_guilds))
@@ -596,6 +600,148 @@ async fn list_admin_roles(
     }
 
     Ok(Json(roles))
+}
+
+#[derive(Debug, Deserialize)]
+struct CreateAdminRoleRequest {
+    code: String,
+    name: String,
+    description: Option<String>,
+    permission_codes: Option<Vec<String>>,
+}
+
+async fn create_admin_role(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(payload): Json<CreateAdminRoleRequest>,
+) -> Result<(StatusCode, Json<AdminRoleSummary>), ApiError> {
+    let actor = require_admin_permission(state.db.as_ref(), &headers, "admin_role.manage").await?;
+    validate_required(&payload.code, "code")?;
+    validate_required(&payload.name, "name")?;
+
+    let row = state
+        .db
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            INSERT INTO admin_roles (code, name, description)
+            VALUES ($1, $2, $3)
+            RETURNING id
+            "#,
+            vec![
+                payload.code.trim().to_owned().into(),
+                payload.name.trim().to_owned().into(),
+                payload.description.clone().into(),
+            ],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::internal("admin role insert returned no row"))?;
+    let role_id: i32 = row.try_get("", "id")?;
+
+    for perm_code in payload.permission_codes.as_deref().unwrap_or_default() {
+        validate_required(perm_code, "permission_code")?;
+        state
+            .db
+            .execute(Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                r#"
+                INSERT INTO admin_role_permissions (admin_role_id, admin_permission_id)
+                SELECT $1, id FROM admin_permissions WHERE code = $2
+                ON CONFLICT DO NOTHING
+                "#,
+                vec![role_id.into(), perm_code.to_owned().into()],
+            ))
+            .await?;
+    }
+
+    insert_admin_audit_log(
+        state.db.as_ref(),
+        actor.id,
+        "admin_role.create",
+        "admin_role",
+        role_id.to_string(),
+    )
+    .await?;
+
+    let permissions = load_admin_role_permissions(state.db.as_ref(), role_id).await?;
+    Ok((
+        StatusCode::CREATED,
+        Json(AdminRoleSummary {
+            id: role_id,
+            code: payload.code.trim().to_owned(),
+            name: payload.name.trim().to_owned(),
+            description: payload.description,
+            permissions,
+        }),
+    ))
+}
+
+#[derive(Debug, Deserialize)]
+struct UpdateAdminRolePermissionsRequest {
+    permission_codes: Vec<String>,
+}
+
+async fn update_admin_role_permissions(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(role_id): Path<i32>,
+    Json(payload): Json<UpdateAdminRolePermissionsRequest>,
+) -> Result<Json<AdminRoleSummary>, ApiError> {
+    let actor =
+        require_admin_permission(state.db.as_ref(), &headers, "admin_role.manage").await?;
+
+    let role = state
+        .db
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"SELECT id, code, name, description FROM admin_roles WHERE id = $1"#,
+            vec![role_id.into()],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::not_found("admin role not found"))?;
+
+    state
+        .db
+        .execute(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            "DELETE FROM admin_role_permissions WHERE admin_role_id = $1",
+            vec![role_id.into()],
+        ))
+        .await?;
+
+    for perm_code in &payload.permission_codes {
+        validate_required(perm_code, "permission_code")?;
+        state
+            .db
+            .execute(Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                r#"
+                INSERT INTO admin_role_permissions (admin_role_id, admin_permission_id)
+                SELECT $1, id FROM admin_permissions WHERE code = $2
+                ON CONFLICT DO NOTHING
+                "#,
+                vec![role_id.into(), perm_code.clone().into()],
+            ))
+            .await?;
+    }
+
+    insert_admin_audit_log(
+        state.db.as_ref(),
+        actor.id,
+        "admin_role.update_permissions",
+        "admin_role",
+        role_id.to_string(),
+    )
+    .await?;
+
+    let permissions = load_admin_role_permissions(state.db.as_ref(), role_id).await?;
+    Ok(Json(AdminRoleSummary {
+        id: role.try_get("", "id")?,
+        code: role.try_get("", "code")?,
+        name: role.try_get("", "name")?,
+        description: role.try_get("", "description")?,
+        permissions,
+    }))
 }
 
 #[derive(Debug, Serialize)]
