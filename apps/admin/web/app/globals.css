@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+@layer base {
+  html {
+    @apply dark;
+  }
+
+  body {
+    @apply bg-background text-on-background font-inter antialiased;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-surface-container border border-outline-variant;
+  }
+
+  .text-glow-primary {
+    text-shadow: 0 0 10px #00f0ff;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-md px-4 py-3 rounded text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 transition-all duration-150;
+  }
+
+  .nav-link-active {
+    @apply flex items-center gap-md px-4 py-3 rounded bg-cyan-500/10 text-cyan-400 border-r-2 border-cyan-400;
+  }
+
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+}
