@@ -1,55 +1,24 @@
-# OpenCode Instructions
+# OpenCode Adapter
 
-## Project Overview
-- Game trading platform: user apps (Expo + Next.js) + admin CMS
-- Monorepo: Turborepo + pnpm
-- Backend: Rust + SeaORM + Axum
+OpenCode should follow the repository-wide AI collaboration framework, not a separate OpenCode-only workflow.
 
-## Commands
+## Required Reading Order
+
+1. `docs/ai/README.md`
+2. `docs/ai/collaboration-rules.md`
+3. `docs/ai/context-map.md`
+4. Relevant skill under `docs/ai/skills/`
+5. Relevant workflow under `docs/workflow/`
+6. Relevant architecture doc under `docs/architecture/`
+
+## OpenCode-Specific Note
+
+The files in `.opencode/skills/` may be used as local shortcuts, but their behavior should stay consistent with `docs/ai/skills/`. If they drift, update the canonical skill first and then adjust the shortcut.
+
+## Validation
+
 ```bash
-# Frontend dev
-pnpm dev              # all apps
-pnpm --filter @gam/user-web dev    # single app
-pnpm --filter @gam/user-app dev    # Expo mobile
-pnpm --filter @gam/admin-web dev   # CMS
-
-# Rust dev
-pnpm dev:rust        # cargo watch
-
-# Docker
-docker-compose up --build
-just smoke           # health check
+.agent/hooks/validate-docs.sh
+.agent/hooks/preflight.sh --docs-only
+.agent/hooks/preflight.sh --full
 ```
-
-## Architecture
-- `apps/user/app/` - Expo (React Native)
-- `apps/user/web/` - Next.js
-- `apps/admin/web/` - CMS
-- `packages/` - Shared: ui, features, api-client, types, config
-- `rust/services/` - user-api (8080), cms-api (8081)
-- `rust/workers/` - order, payment, notification
-
-## Conventions
-
-### Frontend
-- Use `@repo/ui` components for cross-platform UI
-- Use `@repo/api-client` for API calls
-- Use `@repo/features` for shared business logic (Solito pattern)
-- Run `specta gen` after changing Rust API
-
-### Rust
-- Services run on ports 8080, 8081
-- All services need `/health` endpoint
-- Use SeaORM for database
-- Run `cargo fmt` before commit
-
-### Git
-- Branch: `feature/`, `fix/`, `refactor/`
-- Commit: imperative mood (e.g., "add user login")
-- No commit without tests for new features
-
-## Key Files
-- `docker-compose.yml` - Full stack
-- `seed/01-init.sql` - Database seed
-- `AGENTS.md` - This file
-- `justfile` - Dev commands

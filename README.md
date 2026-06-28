@@ -113,6 +113,21 @@ tests/k6/              API load testing scenarios
 docs/                  product, CI, and infrastructure docs
 ```
 
+## AI-First Development
+
+This repository uses a tool-neutral AI collaboration framework so Codex, Claude Code, OpenCode, Cursor, Gemini CLI, and other agents follow the same workflow.
+
+Start with:
+
+- `docs/ai/README.md` for the shared agent operating manual
+- `docs/ai/skills/` for task-specific SOPs
+- `docs/workflow/` for development, testing, deployment, and documentation workflows
+- `docs/architecture/` for system boundaries
+- `docs/adr/` for durable architecture decisions
+- `.agent/hooks/` for neutral validation hooks
+
+Tool-specific files such as `AGENTS.md`, `CLAUDE.md`, and `.opencode/instructions.md` are adapters that point back to the canonical docs.
+
 ## Testing
 
 ```bash
