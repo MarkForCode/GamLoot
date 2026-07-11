@@ -8,7 +8,7 @@
 | `cms-api` | `rust/services/cms-api/` | Rust / Axum | `8081` | Admin/CMS HTTP API for admin auth/users/roles, diagnostic log rules, trial approvals, tenant operations, audit logs, disputes, reports, and moderation actions. |
 | `order-worker` | `rust/workers/order/` | Rust / Tokio | none | TODO: Source currently only prints `order-worker ready`; business processing responsibility is not implemented in source. |
 | `payment-worker` | `rust/workers/payment/` | Rust / Tokio | none | TODO: Source currently only prints `payment-worker ready`; business processing responsibility is not implemented in source. |
-| `notification-worker` | `rust/workers/notification/` | Rust / Tokio | none | TODO: Source currently only prints `notification-worker ready`; business processing responsibility is not implemented in source. |
+| `notification-worker` | `rust/workers/notification/` | Rust / Tokio | none | Processes notification event outbox records into in-app notifications and delivery records. |
 | `user-web` | `apps/user/web/` | Next.js | `3000` | User-facing web app with pages for login, market/listings, profile, subscription, disputes, guild dashboard, members, revenue, supply, bulletin, and trade creation. Proxies `/api/user/*` to `user-api`. |
 | `admin-web` | `apps/admin/web/` | Next.js | `3001` | Admin web app with pages for platform management, analytics, billing, audit, disputes, and health. Proxies `/api/cms/*` to `cms-api`. |
 | `user-app` | `apps/user/app/` | Expo / React Native | Compose maps `8082 -> 8081` plus Expo ports | Mobile app shell for user login against `user-api`; Dockerfile runs Expo dev server. |
@@ -31,6 +31,7 @@ Inferred from `rust/services/user-api/src/main.rs` routes:
 - Lottery lifecycle.
 - Listing disputes and dispute messages.
 - Reports.
+- In-app notification inbox reads, unread counts, read state updates, and user notification preferences.
 - Syncs enabled diagnostic log rules for `user-api` from the database about every five seconds.
 
 ### Dependencies
@@ -88,6 +89,8 @@ Inferred from `rust/services/cms-api/src/main.rs` routes:
 - Admin action confirmations.
 - Dispute/report resolution.
 - User, guild, and listing freeze actions.
+- Notification event, delivery, and action run inspection.
+- Failed notification delivery retry.
 
 ### Dependencies
 
@@ -165,8 +168,8 @@ TODO: Decide whether service names should be normalized across Docker Compose, R
 
 | Variable | Source | Notes |
 | --- | --- | --- |
-| `DATABASE_URL` | Dockerfile, Docker Compose, Terraform SSM secret | Provided, but current worker source does not read it. |
-| `REDIS_URL` | Dockerfile, Docker Compose, Terraform SSM secret | Provided, but current worker source does not read it. |
+| `DATABASE_URL` | Dockerfile, Docker Compose, Terraform SSM secret | Used by `notification-worker`; TODO: `order-worker` and `payment-worker` sources currently do not read it. |
+| `REDIS_URL` | Dockerfile, Docker Compose, Terraform SSM secret | Provided for worker coordination; TODO: current worker sources do not read it yet. |
 | `APP_ENV` | Terraform | Injected into ECS task definitions. |
 | `DEPLOYMENT_ENVIRONMENT` | Terraform | Injected into ECS task definitions. |
 | `OTEL_SERVICE_NAME` | Terraform | Injected into ECS task definitions. |
@@ -189,7 +192,7 @@ TODO: Decide whether service names should be normalized across Docker Compose, R
 
 ### `notification-worker`
 
-- Responsibility: TODO: Current source only prints `notification-worker ready`.
+- Responsibility: Polls `notification_events`, claims pending work with database row locks, creates `in_app_notifications`, records `notification_deliveries`, respects disabled in-app notification preferences, and marks events processed or failed.
 - Local deployment: `rust/workers/notification/Dockerfile` and Docker Compose service `notification-worker`.
 - AWS deployment: Terraform service key `worker-notification`.
 

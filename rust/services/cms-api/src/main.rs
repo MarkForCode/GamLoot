@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::{HeaderMap, StatusCode},
     middleware,
     response::{IntoResponse, Response},
@@ -108,6 +108,22 @@ fn app(db: DatabaseConnection) -> Router {
             get(list_trade_deposits),
         )
         .route("/tenants/:tenant_id/audit-logs", get(list_audit_logs))
+        .route(
+            "/tenants/:tenant_id/notification-events",
+            get(list_notification_events),
+        )
+        .route(
+            "/tenants/:tenant_id/notification-deliveries",
+            get(list_notification_deliveries),
+        )
+        .route(
+            "/tenants/:tenant_id/notification-action-runs",
+            get(list_notification_action_runs),
+        )
+        .route(
+            "/notification-deliveries/:delivery_id/retry",
+            post(retry_notification_delivery),
+        )
         .route("/tenants/:tenant_id/disputes", get(list_disputes))
         .route("/tenants/:tenant_id/reports", get(list_reports))
         .route(
@@ -1227,6 +1243,64 @@ struct AuditLogSummary {
     created_at: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct NotificationEventQuery {
+    status: Option<String>,
+    event_type: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct NotificationEventSummary {
+    id: i32,
+    tenant_id: i32,
+    guild_id: Option<i32>,
+    event_type: String,
+    event_category: String,
+    severity: String,
+    resource_type: String,
+    resource_id: String,
+    status: String,
+    attempt_count: i32,
+    occurred_at: String,
+    created_at: String,
+}
+
+#[derive(Debug, Serialize)]
+struct NotificationDeliverySummary {
+    id: i32,
+    event_id: i32,
+    tenant_id: i32,
+    guild_id: Option<i32>,
+    channel: String,
+    recipient_user_id: Option<i32>,
+    integration_id: Option<i32>,
+    status: String,
+    attempt_count: i32,
+    last_error_code: Option<String>,
+    last_error_message: Option<String>,
+    sent_at: Option<String>,
+    created_at: String,
+}
+
+#[derive(Debug, Serialize)]
+struct NotificationActionRunSummary {
+    id: i32,
+    event_id: i32,
+    rule_id: Option<i32>,
+    action_id: Option<i32>,
+    run_type: String,
+    status: String,
+    attempt_count: i32,
+    started_at: Option<String>,
+    finished_at: Option<String>,
+    created_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct RetryNotificationDelivery {
+    tenant_id: i32,
+}
+
 #[derive(Debug, Serialize)]
 struct DisputeSummary {
     id: i32,
@@ -1844,6 +1918,246 @@ async fn list_audit_logs(
         .collect::<Result<Vec<_>, DbErr>>()?;
 
     Ok(Json(logs))
+}
+
+async fn list_notification_events(
+    State(state): State<AppState>,
+    Path(tenant_id): Path<i32>,
+    Query(query): Query<NotificationEventQuery>,
+) -> Result<Json<Vec<NotificationEventSummary>>, ApiError> {
+    let status = query.status.map(|value| value.trim().to_owned());
+    let event_type = query.event_type.map(|value| value.trim().to_owned());
+    let rows = state
+        .db
+        .query_all(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            SELECT
+                id,
+                tenant_id,
+                guild_id,
+                event_type,
+                event_category,
+                severity,
+                resource_type,
+                resource_id,
+                status,
+                attempt_count,
+                occurred_at::text AS occurred_at,
+                created_at::text AS created_at
+            FROM notification_events
+            WHERE tenant_id = $1
+              AND ($2::text IS NULL OR status = $2)
+              AND ($3::text IS NULL OR event_type = $3)
+            ORDER BY created_at DESC
+            LIMIT 300
+            "#,
+            vec![tenant_id.into(), status.into(), event_type.into()],
+        ))
+        .await?;
+
+    let events = rows
+        .into_iter()
+        .map(|row| {
+            Ok(NotificationEventSummary {
+                id: row.try_get("", "id")?,
+                tenant_id: row.try_get("", "tenant_id")?,
+                guild_id: row.try_get("", "guild_id")?,
+                event_type: row.try_get("", "event_type")?,
+                event_category: row.try_get("", "event_category")?,
+                severity: row.try_get("", "severity")?,
+                resource_type: row.try_get("", "resource_type")?,
+                resource_id: row.try_get("", "resource_id")?,
+                status: row.try_get("", "status")?,
+                attempt_count: row.try_get("", "attempt_count")?,
+                occurred_at: row.try_get("", "occurred_at")?,
+                created_at: row.try_get("", "created_at")?,
+            })
+        })
+        .collect::<Result<Vec<_>, DbErr>>()?;
+
+    Ok(Json(events))
+}
+
+async fn list_notification_deliveries(
+    State(state): State<AppState>,
+    Path(tenant_id): Path<i32>,
+) -> Result<Json<Vec<NotificationDeliverySummary>>, ApiError> {
+    let rows = state
+        .db
+        .query_all(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            SELECT
+                id,
+                event_id,
+                tenant_id,
+                guild_id,
+                channel,
+                recipient_user_id,
+                integration_id,
+                status,
+                attempt_count,
+                last_error_code,
+                last_error_message,
+                sent_at::text AS sent_at,
+                created_at::text AS created_at
+            FROM notification_deliveries
+            WHERE tenant_id = $1
+            ORDER BY created_at DESC
+            LIMIT 300
+            "#,
+            vec![tenant_id.into()],
+        ))
+        .await?;
+
+    let deliveries = rows
+        .into_iter()
+        .map(|row| {
+            Ok(NotificationDeliverySummary {
+                id: row.try_get("", "id")?,
+                event_id: row.try_get("", "event_id")?,
+                tenant_id: row.try_get("", "tenant_id")?,
+                guild_id: row.try_get("", "guild_id")?,
+                channel: row.try_get("", "channel")?,
+                recipient_user_id: row.try_get("", "recipient_user_id")?,
+                integration_id: row.try_get("", "integration_id")?,
+                status: row.try_get("", "status")?,
+                attempt_count: row.try_get("", "attempt_count")?,
+                last_error_code: row.try_get("", "last_error_code")?,
+                last_error_message: row.try_get("", "last_error_message")?,
+                sent_at: row.try_get("", "sent_at")?,
+                created_at: row.try_get("", "created_at")?,
+            })
+        })
+        .collect::<Result<Vec<_>, DbErr>>()?;
+
+    Ok(Json(deliveries))
+}
+
+async fn list_notification_action_runs(
+    State(state): State<AppState>,
+    Path(tenant_id): Path<i32>,
+) -> Result<Json<Vec<NotificationActionRunSummary>>, ApiError> {
+    let rows = state
+        .db
+        .query_all(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            SELECT
+                r.id,
+                r.event_id,
+                r.rule_id,
+                r.action_id,
+                r.run_type,
+                r.status,
+                r.attempt_count,
+                r.started_at::text AS started_at,
+                r.finished_at::text AS finished_at,
+                r.created_at::text AS created_at
+            FROM notification_action_runs r
+            JOIN notification_events e ON e.id = r.event_id
+            WHERE e.tenant_id = $1
+            ORDER BY r.created_at DESC
+            LIMIT 300
+            "#,
+            vec![tenant_id.into()],
+        ))
+        .await?;
+
+    let runs = rows
+        .into_iter()
+        .map(|row| {
+            Ok(NotificationActionRunSummary {
+                id: row.try_get("", "id")?,
+                event_id: row.try_get("", "event_id")?,
+                rule_id: row.try_get("", "rule_id")?,
+                action_id: row.try_get("", "action_id")?,
+                run_type: row.try_get("", "run_type")?,
+                status: row.try_get("", "status")?,
+                attempt_count: row.try_get("", "attempt_count")?,
+                started_at: row.try_get("", "started_at")?,
+                finished_at: row.try_get("", "finished_at")?,
+                created_at: row.try_get("", "created_at")?,
+            })
+        })
+        .collect::<Result<Vec<_>, DbErr>>()?;
+
+    Ok(Json(runs))
+}
+
+async fn retry_notification_delivery(
+    State(state): State<AppState>,
+    Path(delivery_id): Path<i32>,
+    Json(payload): Json<RetryNotificationDelivery>,
+) -> Result<Json<NotificationDeliverySummary>, ApiError> {
+    let row = state
+        .db
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            UPDATE notification_deliveries d
+            SET status = 'pending',
+                last_error_code = NULL,
+                last_error_message = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE d.id = $1
+              AND d.tenant_id = $2
+              AND d.status = 'failed'
+            RETURNING
+                id,
+                event_id,
+                tenant_id,
+                guild_id,
+                channel,
+                recipient_user_id,
+                integration_id,
+                status,
+                attempt_count,
+                last_error_code,
+                last_error_message,
+                sent_at::text AS sent_at,
+                created_at::text AS created_at
+            "#,
+            vec![delivery_id.into(), payload.tenant_id.into()],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::bad_request("delivery is not retryable"))?;
+
+    state
+        .db
+        .execute(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            UPDATE notification_events
+            SET status = 'pending',
+                next_attempt_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+              AND tenant_id = $2
+            "#,
+            vec![
+                row.try_get::<i32>("", "event_id")?.into(),
+                payload.tenant_id.into(),
+            ],
+        ))
+        .await?;
+
+    Ok(Json(NotificationDeliverySummary {
+        id: row.try_get("", "id")?,
+        event_id: row.try_get("", "event_id")?,
+        tenant_id: row.try_get("", "tenant_id")?,
+        guild_id: row.try_get("", "guild_id")?,
+        channel: row.try_get("", "channel")?,
+        recipient_user_id: row.try_get("", "recipient_user_id")?,
+        integration_id: row.try_get("", "integration_id")?,
+        status: row.try_get("", "status")?,
+        attempt_count: row.try_get("", "attempt_count")?,
+        last_error_code: row.try_get("", "last_error_code")?,
+        last_error_message: row.try_get("", "last_error_message")?,
+        sent_at: row.try_get("", "sent_at")?,
+        created_at: row.try_get("", "created_at")?,
+    }))
 }
 
 async fn list_disputes(

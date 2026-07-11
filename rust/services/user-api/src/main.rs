@@ -3,7 +3,7 @@ use axum::{
     http::StatusCode,
     middleware,
     response::{IntoResponse, Response},
-    routing::{get, post},
+    routing::{get, patch, post},
     Json, Router,
 };
 use gam_observability::{
@@ -15,6 +15,7 @@ use sea_orm::{
     Statement, TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Value as JsonValue};
 use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 use uuid::Uuid;
 
@@ -53,6 +54,20 @@ fn app(db: DatabaseConnection) -> Router {
         .route("/health", get(health))
         .route("/metrics", get(metrics))
         .route("/auth/login", post(login))
+        .route("/notifications", get(list_notifications))
+        .route(
+            "/notifications/unread-count",
+            get(notification_unread_count),
+        )
+        .route(
+            "/notifications/:notification_id/read",
+            post(mark_notification_read),
+        )
+        .route("/notifications/read-all", post(mark_all_notifications_read))
+        .route(
+            "/notification-preferences",
+            patch(upsert_notification_preference),
+        )
         .route("/trial-requests", post(create_trial_request))
         .route("/tenants/:tenant_id/listings", get(list_tenant_listings))
         .route("/listings/:listing_id", get(get_listing_detail))
@@ -222,6 +237,59 @@ struct LoginResponse {
     guild_id: Option<i32>,
 }
 
+#[derive(Debug, Deserialize)]
+struct NotificationQuery {
+    tenant_id: i32,
+    user_id: i32,
+    unread_only: Option<bool>,
+    category: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct NotificationSummary {
+    id: i32,
+    tenant_id: i32,
+    guild_id: Option<i32>,
+    event_id: i32,
+    title: String,
+    body: String,
+    severity: String,
+    resource_type: String,
+    resource_id: String,
+    link_path: Option<String>,
+    read_at: Option<String>,
+    created_at: String,
+}
+
+#[derive(Debug, Serialize)]
+struct NotificationUnreadCount {
+    unread_count: i64,
+}
+
+#[derive(Debug, Deserialize)]
+struct NotificationActor {
+    tenant_id: i32,
+    user_id: i32,
+}
+
+#[derive(Debug, Deserialize)]
+struct UpsertNotificationPreference {
+    tenant_id: i32,
+    guild_id: Option<i32>,
+    user_id: i32,
+    event_category: Option<String>,
+    event_type: Option<String>,
+    channel: String,
+    enabled: bool,
+    minimum_severity: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct NotificationPreferenceResponse {
+    id: i32,
+    enabled: bool,
+}
+
 async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>,
@@ -275,6 +343,239 @@ async fn login(
         role: user.try_get("", "role")?,
         tenant_id: user.try_get("", "tenant_id")?,
         guild_id: user.try_get("", "guild_id")?,
+    }))
+}
+
+async fn list_notifications(
+    State(state): State<AppState>,
+    Query(query): Query<NotificationQuery>,
+) -> Result<Json<Vec<NotificationSummary>>, ApiError> {
+    let category = query.category.map(|value| value.trim().to_owned());
+    let rows = state
+        .db
+        .query_all(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            SELECT
+                n.id,
+                n.tenant_id,
+                n.guild_id,
+                n.event_id,
+                n.title,
+                n.body,
+                n.severity,
+                n.resource_type,
+                n.resource_id,
+                n.link_path,
+                n.read_at::text AS read_at,
+                n.created_at::text AS created_at
+            FROM in_app_notifications n
+            JOIN notification_events e ON e.id = n.event_id
+            WHERE n.tenant_id = $1
+              AND n.user_id = $2
+              AND ($3::boolean = false OR n.read_at IS NULL)
+              AND ($4::text IS NULL OR e.event_category = $4)
+              AND n.archived_at IS NULL
+            ORDER BY n.created_at DESC
+            LIMIT 100
+            "#,
+            vec![
+                query.tenant_id.into(),
+                query.user_id.into(),
+                query.unread_only.unwrap_or(false).into(),
+                category.into(),
+            ],
+        ))
+        .await?;
+
+    let notifications = rows
+        .into_iter()
+        .map(|row| {
+            Ok(NotificationSummary {
+                id: row.try_get("", "id")?,
+                tenant_id: row.try_get("", "tenant_id")?,
+                guild_id: row.try_get("", "guild_id")?,
+                event_id: row.try_get("", "event_id")?,
+                title: row.try_get("", "title")?,
+                body: row.try_get("", "body")?,
+                severity: row.try_get("", "severity")?,
+                resource_type: row.try_get("", "resource_type")?,
+                resource_id: row.try_get("", "resource_id")?,
+                link_path: row.try_get("", "link_path")?,
+                read_at: row.try_get("", "read_at")?,
+                created_at: row.try_get("", "created_at")?,
+            })
+        })
+        .collect::<Result<Vec<_>, DbErr>>()?;
+
+    Ok(Json(notifications))
+}
+
+async fn notification_unread_count(
+    State(state): State<AppState>,
+    Query(query): Query<NotificationQuery>,
+) -> Result<Json<NotificationUnreadCount>, ApiError> {
+    let row = state
+        .db
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            SELECT COUNT(*)::bigint AS unread_count
+            FROM in_app_notifications
+            WHERE tenant_id = $1
+              AND user_id = $2
+              AND read_at IS NULL
+              AND archived_at IS NULL
+            "#,
+            vec![query.tenant_id.into(), query.user_id.into()],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::internal("notification count returned no row"))?;
+
+    Ok(Json(NotificationUnreadCount {
+        unread_count: row.try_get("", "unread_count")?,
+    }))
+}
+
+async fn mark_notification_read(
+    State(state): State<AppState>,
+    Path(notification_id): Path<i32>,
+    Json(payload): Json<NotificationActor>,
+) -> Result<Json<NotificationSummary>, ApiError> {
+    let row = state
+        .db
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            UPDATE in_app_notifications
+            SET read_at = COALESCE(read_at, CURRENT_TIMESTAMP)
+            WHERE id = $1
+              AND tenant_id = $2
+              AND user_id = $3
+            RETURNING
+                id,
+                tenant_id,
+                guild_id,
+                event_id,
+                title,
+                body,
+                severity,
+                resource_type,
+                resource_id,
+                link_path,
+                read_at::text AS read_at,
+                created_at::text AS created_at
+            "#,
+            vec![
+                notification_id.into(),
+                payload.tenant_id.into(),
+                payload.user_id.into(),
+            ],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::not_found("notification not found"))?;
+
+    Ok(Json(NotificationSummary {
+        id: row.try_get("", "id")?,
+        tenant_id: row.try_get("", "tenant_id")?,
+        guild_id: row.try_get("", "guild_id")?,
+        event_id: row.try_get("", "event_id")?,
+        title: row.try_get("", "title")?,
+        body: row.try_get("", "body")?,
+        severity: row.try_get("", "severity")?,
+        resource_type: row.try_get("", "resource_type")?,
+        resource_id: row.try_get("", "resource_id")?,
+        link_path: row.try_get("", "link_path")?,
+        read_at: row.try_get("", "read_at")?,
+        created_at: row.try_get("", "created_at")?,
+    }))
+}
+
+async fn mark_all_notifications_read(
+    State(state): State<AppState>,
+    Json(payload): Json<NotificationActor>,
+) -> Result<Json<NotificationUnreadCount>, ApiError> {
+    state
+        .db
+        .execute(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            UPDATE in_app_notifications
+            SET read_at = COALESCE(read_at, CURRENT_TIMESTAMP)
+            WHERE tenant_id = $1
+              AND user_id = $2
+              AND read_at IS NULL
+            "#,
+            vec![payload.tenant_id.into(), payload.user_id.into()],
+        ))
+        .await?;
+
+    Ok(Json(NotificationUnreadCount { unread_count: 0 }))
+}
+
+async fn upsert_notification_preference(
+    State(state): State<AppState>,
+    Json(payload): Json<UpsertNotificationPreference>,
+) -> Result<Json<NotificationPreferenceResponse>, ApiError> {
+    validate_required(&payload.channel, "channel")?;
+    let minimum_severity = payload.minimum_severity.unwrap_or_else(|| "info".into());
+    let tx = state.db.begin().await?;
+    tx.execute(Statement::from_sql_and_values(
+        DbBackend::Postgres,
+        r#"
+        DELETE FROM notification_preferences
+        WHERE tenant_id = $1
+          AND guild_id IS NOT DISTINCT FROM $2
+          AND user_id IS NOT DISTINCT FROM $3
+          AND event_category IS NOT DISTINCT FROM $4
+          AND event_type IS NOT DISTINCT FROM $5
+          AND channel = $6
+        "#,
+        vec![
+            payload.tenant_id.into(),
+            payload.guild_id.into(),
+            payload.user_id.into(),
+            payload.event_category.clone().into(),
+            payload.event_type.clone().into(),
+            payload.channel.clone().into(),
+        ],
+    ))
+    .await?;
+    let row = tx
+        .query_one(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"
+            INSERT INTO notification_preferences (
+                tenant_id,
+                guild_id,
+                user_id,
+                event_category,
+                event_type,
+                channel,
+                enabled,
+                minimum_severity
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id, enabled
+            "#,
+            vec![
+                payload.tenant_id.into(),
+                payload.guild_id.into(),
+                payload.user_id.into(),
+                payload.event_category.into(),
+                payload.event_type.into(),
+                payload.channel.into(),
+                payload.enabled.into(),
+                minimum_severity.into(),
+            ],
+        ))
+        .await?
+        .ok_or_else(|| ApiError::internal("notification preference upsert returned no row"))?;
+    tx.commit().await?;
+
+    Ok(Json(NotificationPreferenceResponse {
+        id: row.try_get("", "id")?,
+        enabled: row.try_get("", "enabled")?,
     }))
 }
 
@@ -1055,7 +1356,7 @@ async fn approve_listing(
             WHERE id = $2
               AND tenant_id = $3
               AND status IN ('draft', 'pending_approval')
-            RETURNING id, status, approved_by
+            RETURNING id, status, approved_by, guild_id, seller_user_id, title
             "#,
             vec![
                 payload.approved_by.into(),
@@ -1074,6 +1375,30 @@ async fn approve_listing(
         "listing.approve",
         "listing",
         listing_id.to_string(),
+    )
+    .await?;
+    let guild_id: i32 = row.try_get("", "guild_id")?;
+    let seller_user_id: i32 = row.try_get("", "seller_user_id")?;
+    let title: String = row.try_get("", "title")?;
+    insert_notification_event(
+        state.db.as_ref(),
+        NotificationEventInput {
+            tenant_id: payload.tenant_id,
+            guild_id: Some(guild_id),
+            event_type: "listing.approved",
+            event_category: "listing",
+            severity: "success",
+            actor_user_id: Some(payload.approved_by),
+            resource_type: "listing",
+            resource_id: listing_id.to_string(),
+            dedupe_key: format!("listing.approved:{listing_id}"),
+            payload: json!({
+                "title": "Listing approved",
+                "body": format!("Listing #{listing_id} ({title}) is now active."),
+                "link_path": format!("/market/listings/{listing_id}"),
+                "recipient_user_ids": [seller_user_id],
+            }),
+        },
     )
     .await?;
 
@@ -1237,7 +1562,7 @@ async fn create_bid(
         .query_one(Statement::from_sql_and_values(
             DbBackend::Postgres,
             r#"
-            SELECT id, tenant_id, guild_id, alliance_id, visibility, status, start_price, currency_id
+            SELECT id, tenant_id, guild_id, alliance_id, seller_user_id, title, visibility, status, start_price, currency_id
             FROM listings
             WHERE id = $1
               AND tenant_id = $2
@@ -1300,6 +1625,7 @@ async fn create_bid(
         }
     }
 
+    let bid_amount = payload.amount.clone();
     let row = state
         .db
         .query_one(Statement::from_sql_and_values(
@@ -1327,6 +1653,10 @@ async fn create_bid(
         ))
         .await?
         .ok_or_else(|| ApiError::internal("bid insert returned no row"))?;
+    let bid_id: i32 = row.try_get("", "id")?;
+    let listing_guild_id: i32 = listing.try_get("", "guild_id")?;
+    let seller_user_id: i32 = listing.try_get("", "seller_user_id")?;
+    let title: String = listing.try_get("", "title")?;
 
     state
         .db
@@ -1342,11 +1672,33 @@ async fn create_bid(
             vec![listing_id.into()],
         ))
         .await?;
+    insert_notification_event(
+        state.db.as_ref(),
+        NotificationEventInput {
+            tenant_id: payload.tenant_id,
+            guild_id: Some(listing_guild_id),
+            event_type: "bid.created",
+            event_category: "bid",
+            severity: "info",
+            actor_user_id: Some(payload.bidder_user_id),
+            resource_type: "bid",
+            resource_id: bid_id.to_string(),
+            dedupe_key: format!("bid.created:{bid_id}"),
+            payload: json!({
+                "title": "New bid placed",
+                "body": format!("Listing #{listing_id} ({title}) received a bid of {bid_amount}."),
+                "link_path": format!("/market/listings/{listing_id}"),
+                "listing_id": listing_id,
+                "recipient_user_ids": [seller_user_id, payload.bidder_user_id],
+            }),
+        },
+    )
+    .await?;
 
     Ok((
         StatusCode::CREATED,
         Json(BidResponse {
-            id: row.try_get("", "id")?,
+            id: bid_id,
             status: row.try_get("", "status")?,
         }),
     ))
@@ -1500,6 +1852,29 @@ async fn settle_listing(
         listing_id.to_string(),
     )
     .await?;
+    insert_notification_event(
+        &tx,
+        NotificationEventInput {
+            tenant_id,
+            guild_id: Some(guild_id),
+            event_type: "settlement.completed",
+            event_category: "settlement",
+            severity: "success",
+            actor_user_id: Some(payload.completed_by),
+            resource_type: "settlement",
+            resource_id: settlement_id.to_string(),
+            dedupe_key: format!("settlement.completed:{settlement_id}"),
+            payload: json!({
+                "title": "Settlement completed",
+                "body": format!("Listing #{listing_id} settled for {total_amount}."),
+                "link_path": format!("/market/listings/{listing_id}"),
+                "listing_id": listing_id,
+                "winning_bid_id": winning_bid_id,
+                "recipient_user_ids": [seller_user_id, buyer_user_id],
+            }),
+        },
+    )
+    .await?;
 
     tx.commit().await?;
 
@@ -1622,7 +1997,7 @@ async fn forfeit_trade_deposit(
         .query_one(Statement::from_sql_and_values(
             DbBackend::Postgres,
             r#"
-            SELECT id, tenant_id, guild_id, currency_id, amount, status
+            SELECT id, tenant_id, guild_id, listing_id, user_id, currency_id, amount, status
             FROM trade_deposits
             WHERE id = $1
               AND tenant_id = $2
@@ -1639,6 +2014,8 @@ async fn forfeit_trade_deposit(
 
     let tenant_id: i32 = deposit.try_get("", "tenant_id")?;
     let guild_id: i32 = deposit.try_get("", "guild_id")?;
+    let listing_id: Option<i32> = deposit.try_get("", "listing_id")?;
+    let deposit_user_id: i32 = deposit.try_get("", "user_id")?;
     let currency_id: i32 = deposit.try_get("", "currency_id")?;
     let amount: String = deposit.try_get("", "amount")?;
     let reason = payload.reason.unwrap_or_else(|| "deposit forfeited".into());
@@ -1681,6 +2058,28 @@ async fn forfeit_trade_deposit(
         "deposit.forfeit",
         "trade_deposit",
         deposit_id.to_string(),
+    )
+    .await?;
+    insert_notification_event(
+        &tx,
+        NotificationEventInput {
+            tenant_id,
+            guild_id: Some(guild_id),
+            event_type: "deposit.forfeited",
+            event_category: "treasury",
+            severity: "warning",
+            actor_user_id: Some(payload.handled_by),
+            resource_type: "trade_deposit",
+            resource_id: deposit_id.to_string(),
+            dedupe_key: format!("deposit.forfeited:{deposit_id}"),
+            payload: json!({
+                "title": "Deposit forfeited",
+                "body": format!("A deposit of {amount} was forfeited."),
+                "link_path": listing_id.map(|id| format!("/market/listings/{id}")),
+                "listing_id": listing_id,
+                "recipient_user_ids": [deposit_user_id],
+            }),
+        },
     )
     .await?;
 
@@ -2835,6 +3234,8 @@ async fn create_listing_dispute(
         .await?
         .ok_or_else(|| ApiError::not_found("listing not found"))?;
     let guild_id: i32 = listing.try_get("", "guild_id")?;
+    let seller_user_id: i32 = listing.try_get("", "seller_user_id")?;
+    let matched_buyer_user_id: Option<i32> = listing.try_get("", "matched_buyer_user_id")?;
     ensure_user_permission(
         state.db.as_ref(),
         payload.tenant_id,
@@ -2881,6 +3282,34 @@ async fn create_listing_dispute(
         "dispute.create",
         "dispute_case",
         dispute_id.to_string(),
+    )
+    .await?;
+    let mut recipient_user_ids = vec![payload.opened_by, seller_user_id];
+    if let Some(buyer_user_id) = matched_buyer_user_id {
+        recipient_user_ids.push(buyer_user_id);
+    }
+    recipient_user_ids.sort_unstable();
+    recipient_user_ids.dedup();
+    insert_notification_event(
+        state.db.as_ref(),
+        NotificationEventInput {
+            tenant_id: payload.tenant_id,
+            guild_id: Some(guild_id),
+            event_type: "dispute.created",
+            event_category: "moderation",
+            severity: "warning",
+            actor_user_id: Some(payload.opened_by),
+            resource_type: "dispute_case",
+            resource_id: dispute_id.to_string(),
+            dedupe_key: format!("dispute.created:{dispute_id}"),
+            payload: json!({
+                "title": "Dispute opened",
+                "body": format!("A dispute was opened for listing #{listing_id}."),
+                "link_path": format!("/disputes/{dispute_id}"),
+                "listing_id": listing_id,
+                "recipient_user_ids": recipient_user_ids,
+            }),
+        },
     )
     .await?;
 
@@ -2978,6 +3407,12 @@ async fn create_report(
     validate_required(&payload.resource_type, "resource_type")?;
     validate_required(&payload.reason, "reason")?;
     validate_required(&payload.description, "description")?;
+    let resource_type = payload.resource_type.clone();
+    let resource_id = payload.resource_id.clone();
+    let reporter_user_id = payload.reporter_user_id;
+    let reported_user_id = payload.reported_user_id;
+    let tenant_id = payload.tenant_id;
+    let guild_id = payload.guild_id;
 
     let row = state
         .db
@@ -3022,6 +3457,37 @@ async fn create_report(
         report_id.to_string(),
     )
     .await?;
+    let mut recipient_user_ids = vec![reporter_user_id];
+    if let Some(reported_user_id) = reported_user_id {
+        recipient_user_ids.push(reported_user_id);
+    }
+    recipient_user_ids.sort_unstable();
+    recipient_user_ids.dedup();
+    if let Some(tenant_id) = tenant_id {
+        insert_notification_event(
+            state.db.as_ref(),
+            NotificationEventInput {
+                tenant_id,
+                guild_id,
+                event_type: "report.created",
+                event_category: "moderation",
+                severity: "warning",
+                actor_user_id: Some(reporter_user_id),
+                resource_type: "report",
+                resource_id: report_id.to_string(),
+                dedupe_key: format!("report.created:{report_id}"),
+                payload: json!({
+                    "title": "Report created",
+                    "body": format!("A report was created for {resource_type} {}.", resource_id.clone().unwrap_or_else(|| report_id.to_string())),
+                    "link_path": format!("/reports/{report_id}"),
+                    "reported_resource_type": resource_type,
+                    "reported_resource_id": resource_id,
+                    "recipient_user_ids": recipient_user_ids,
+                }),
+            },
+        )
+        .await?;
+    }
 
     Ok((
         StatusCode::CREATED,
@@ -3849,6 +4315,59 @@ async fn insert_audit_log_tx(
         resource_id,
     )
     .await
+}
+
+struct NotificationEventInput {
+    tenant_id: i32,
+    guild_id: Option<i32>,
+    event_type: &'static str,
+    event_category: &'static str,
+    severity: &'static str,
+    actor_user_id: Option<i32>,
+    resource_type: &'static str,
+    resource_id: String,
+    dedupe_key: String,
+    payload: JsonValue,
+}
+
+async fn insert_notification_event<C>(db: &C, input: NotificationEventInput) -> Result<(), ApiError>
+where
+    C: ConnectionTrait,
+{
+    db.execute(Statement::from_sql_and_values(
+        DbBackend::Postgres,
+        r#"
+        INSERT INTO notification_events (
+            tenant_id,
+            guild_id,
+            event_type,
+            event_category,
+            severity,
+            actor_user_id,
+            resource_type,
+            resource_id,
+            dedupe_key,
+            payload
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
+        ON CONFLICT (dedupe_key) DO NOTHING
+        "#,
+        vec![
+            input.tenant_id.into(),
+            input.guild_id.into(),
+            input.event_type.into(),
+            input.event_category.into(),
+            input.severity.into(),
+            input.actor_user_id.into(),
+            input.resource_type.into(),
+            input.resource_id.into(),
+            input.dedupe_key.into(),
+            input.payload.to_string().into(),
+        ],
+    ))
+    .await?;
+
+    Ok(())
 }
 
 #[derive(Debug)]
